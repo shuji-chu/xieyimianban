@@ -1,11 +1,14 @@
 name: Deploy UI Preview to GitHub Pages
+# Retry deployment after repository Actions permissions were reviewed.
 
 on:
   push:
     branches:
       - ui/blue-white-tech-dashboard
+      - feature/admin-dashboard
     paths:
       - "index.html"
+      - "admin-dashboard.html"
       - "static/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
