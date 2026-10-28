@@ -50,6 +50,20 @@ html,body{background:#030914;color:#e6f3ff}
 .auth-error.visible{display:block}
 #loginBtn:disabled{opacity:.65;cursor:wait}
 
+
+/* Dual-mode authentication and password-reset dialog */
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;margin:0 0 20px;border:1px solid #21456c;border-radius:13px;background:#06152a}
+.auth-tab{border:0;border-radius:9px;padding:11px 8px;background:transparent;color:#8ca9cc;font-weight:700;font-size:13px;transition:.2s}
+.auth-tab.active{color:#eaf8ff;background:linear-gradient(110deg,#1769b8,#174b94);box-shadow:0 5px 18px #1689ff24}
+.login-options{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-3px 0 12px;font-size:12px}
+.remember-option{display:inline-flex;align-items:center;gap:7px;color:#9cb8d9;cursor:pointer}.remember-option input{accent-color:#38bfff;width:15px;height:15px;margin:0}
+.text-link{border:0;background:transparent;color:#60cfff;padding:4px 0;font-size:12px;cursor:pointer}.text-link:hover{text-decoration:underline}
+.auth-error{display:none;color:#ff858e;background:#401b2a66;border:1px solid #8f354b88;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.6;overflow-wrap:anywhere;margin:12px 0 0}.auth-error.visible{display:block}
+.modal-backdrop{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:18px;background:#020817c9;backdrop-filter:blur(12px)}.modal-backdrop[hidden],.field[hidden]{display:none!important}
+.reset-modal{position:relative;width:min(100%,470px);max-height:min(90vh,850px);overflow:auto;padding:30px 26px;border:1px solid #28527c;border-radius:22px;background:linear-gradient(145deg,#0a203d,#041022);box-shadow:0 30px 100px #0009}
+.reset-modal h2{margin:0 32px 8px 0;color:#eaf6ff;font-size:23px}.reset-modal .sub{margin-bottom:18px}.reset-modal .field{margin:14px 0}.reset-modal .btn{margin-top:8px}.modal-close{position:absolute;right:17px;top:14px;width:34px;height:34px;border:1px solid #28527c;border-radius:10px;background:#0d2a4a;color:#b8d5f4;font-size:23px;line-height:1}
+.send-code-btn:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:560px){.reset-modal{padding:27px 19px}.auth-tab{font-size:12px}}
 </style>
 </head>
 <body>
@@ -61,7 +75,35 @@ html,body{background:#030914;color:#e6f3ff}
 <div class="preview-wrap" id="preview"><div class="preview-glow"></div><div class="preview"><div class="preview-head"><div class="preview-title">系统运行概览 <small style="display:block;color:#8ca3bd;font-weight:400;font-size:10px;margin-top:5px">NODE OVERVIEW / DEMO</small></div><span class="live">● 演示数据</span></div><div class="preview-stats"><div class="stat"><label>在线用户</label><strong>128</strong><small>↗ 运行状态良好</small></div><div class="stat"><label>总流量使用</label><strong>68.4 <small style="display:inline;font-size:12px;color:#4d84c1">GB</small></strong><small>本周期累计</small></div></div><div class="chart"><svg viewBox="0 0 420 140" preserveAspectRatio="none"><defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#5bb7ff" stop-opacity=".32"/><stop offset="100%" stop-color="#5bb7ff" stop-opacity="0"/></linearGradient></defs><g stroke="#e1edf9" stroke-dasharray="3 5"><path d="M0 25H420M0 60H420M0 95H420M0 130H420"/></g><path d="M0 106 C24 95 32 110 55 83 S88 94 112 72 S151 82 175 54 S207 75 231 64 S264 28 289 45 S325 70 347 37 S389 55 420 18 L420 140 L0 140Z" fill="url(#area)"/><path d="M0 106 C24 95 32 110 55 83 S88 94 112 72 S151 82 175 54 S207 75 231 64 S264 28 289 45 S325 70 347 37 S389 55 420 18" fill="none" stroke="#388cf4" stroke-width="2.5" stroke-linecap="round"/></svg></div><div class="preview-users"><span>活跃用户分布</span><div class="avatars"><div class="avatar">A</div><div class="avatar">B</div><div class="avatar">C</div><div class="avatar">+125</div></div></div></div></div></main>
 <div id="features" class="features"><article class="feature"><div class="feature-icon">⌁</div><h3>流量一目了然</h3><p>集中查看流量使用情况与配额，帮助你快速发现异常使用。</p></article><article class="feature"><div class="feature-icon">◇</div><h3>用户管理更轻松</h3><p>统一整理用户、协议与状态，减少重复操作，让管理更高效。</p></article><article class="feature"><div class="feature-icon">◎</div><h3>轻量清爽的体验</h3><p>蓝白科技视觉、动态粒子背景与响应式布局，手机电脑都好用。</p></article></div>
 </section>
-<section id="login" class="view active"><div class="login-layout"><div class="login-message"><button class="backlink" onclick="showView('landing')">← 返回首页</button><div class="eyebrow"><span class="pulse"></span> SECURE WORKSPACE</div><h1>欢迎回来。<br><span style="color:#3988f3">连接你的节点世界。</span></h1><p>进入SOSKS5 管理控制台，查看用户概况、流量统计和节点信息。</p></div><form class="login-card" id="loginForm"><div class="brand" style="margin-bottom:30px"><div class="brandmark">✦</div><div>SOSKS5<small>NODE CONTROL SYSTEM</small></div></div><h2>登录控制台</h2><p class="sub">通过邮箱验证码验证身份后进入工作空间</p><label class="field"><span>邮箱地址</span><input id="username" type="email" autocomplete="email" placeholder="请输入你的邮箱地址" required></label><div class="field"><span>邮箱验证码</span><div class="code-field"><input id="password" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="请输入邮箱收到的验证码" required><button class="send-code-btn" id="sendCodeBtn" type="button">发送验证码</button></div></div><button class="btn btn-primary" id="loginBtn" type="submit">验证邮箱并进入控制台 <span>→</span></button><p id="authError" class="auth-error" role="alert" aria-live="polite"></p><p id="authHint" class="hint">使用邮箱验证码安全登录，不需要设置密码。</p></form></div></section>
+<section id="login" class="view active"><div class="login-layout"><div class="login-message"><button class="backlink" onclick="showView('landing')">← 返回首页</button><div class="eyebrow"><span class="pulse"></span> SECURE WORKSPACE</div><h1>欢迎回来。<br><span style="color:#3988f3">连接你的节点世界。</span></h1><p>进入SOSKS5 管理控制台，查看用户概况、流量统计和节点信息。</p></div><form class="login-card" id="loginForm">
+<div class="brand" style="margin-bottom:30px"><div class="brandmark">✦</div><div>SOSKS5<small>NODE CONTROL SYSTEM</small></div></div>
+<h2>登录控制台</h2><p class="sub">选择适合你的安全验证方式</p>
+<div class="auth-tabs" role="tablist" aria-label="登录方式">
+<button type="button" class="auth-tab active" id="passwordTab" role="tab" aria-selected="true" data-mode="password">密码登录</button>
+<button type="button" class="auth-tab" id="codeTab" role="tab" aria-selected="false" data-mode="code">验证码登录</button>
+</div>
+<label class="field"><span>邮箱地址</span><input id="username" type="email" autocomplete="email" placeholder="请输入你的邮箱地址" required></label>
+<div id="passwordFields">
+<label class="field"><span>登录密码</span><input id="loginPassword" type="password" autocomplete="current-password" placeholder="请输入登录密码" required></label>
+<div class="login-options"><label class="remember-option"><input id="rememberMe" type="checkbox"> <span>记住我</span></label><button type="button" class="text-link" id="forgotPasswordBtn">忘记密码？</button></div>
+</div>
+<div class="field" id="codeFields" hidden><span>邮箱验证码</span><div class="code-field"><input id="loginCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="请输入邮箱收到的验证码"><button class="send-code-btn" id="sendCodeBtn" type="button">发送验证码</button></div></div>
+<button class="btn btn-primary" id="loginBtn" type="submit">登录并进入控制台 <span>→</span></button>
+<p id="authError" class="auth-error" role="alert" aria-live="polite"></p><p id="authHint" class="hint">请使用你的账户邮箱和密码登录。</p>
+</form>
+<div class="modal-backdrop" id="resetModal" hidden>
+<section class="reset-modal" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+<button type="button" class="modal-close" id="closeResetModal" aria-label="关闭">×</button>
+<h2 id="resetTitle">重置登录密码</h2><p class="sub">验证邮箱后设置新密码</p>
+<form id="resetForm">
+<label class="field"><span>邮箱地址</span><div class="code-field"><input id="resetEmail" type="email" autocomplete="email" placeholder="请输入账户邮箱" required><button class="send-code-btn" id="resetSendCodeBtn" type="button">发送验证码</button></div></label>
+<label class="field"><span>邮箱验证码</span><input id="resetCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="请输入验证码" required></label>
+<label class="field"><span>新密码</span><input id="newPassword" type="password" autocomplete="new-password" minlength="8" placeholder="至少 8 位字符" required></label>
+<label class="field"><span>确认新密码</span><input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" placeholder="请再次输入新密码" required></label>
+<p id="resetError" class="auth-error" role="alert" aria-live="polite"></p>
+<button class="btn btn-primary" id="resetSubmitBtn" type="submit">确认重置密码</button>
+</form>
+</section></div></div></section>
 <section id="dashboard" class="view"><div class="dash"><aside class="sidebar"><div class="sidebrand"><div class="brand"><div class="brandmark">✦</div><div class="brandtext">SOSKS5<small>CONTROL CENTER</small></div></div></div><div class="side-label">工作空间</div><nav><button class="side-link active" data-page="overview" onclick="showPage('overview',this)"><span class="ico">▦</span><span class="linktext">总览</span></button><button class="side-link" data-page="users" onclick="showPage('users',this)"><span class="ico">♙</span><span class="linktext">用户管理</span></button><button class="side-link" data-page="nodes" onclick="showPage('nodes',this)"><span class="ico">⌘</span><span class="linktext">节点管理</span></button><button class="side-link" data-page="bots" onclick="showPage('bots',this)"><span class="ico">◉</span><span class="linktext">机器人管理</span></button><button class="side-link" data-page="settings" onclick="showPage('settings',this)"><span class="ico">⚙</span><span class="linktext">系统设置</span></button></nav><div class="side-bottom"><button class="side-link" onclick="showView('landing')"><span class="ico">↪</span><span class="linktext">退出演示</span></button><div class="profile"><div class="profile-icon">♙</div><div class="profile-text"><strong>管理员</strong><small>演示工作空间</small></div></div></div></aside><main class="dash-main"><header class="dash-top"><div class="crumb">工作空间　/　<strong id="crumbTitle">总览</strong></div><div class="top-actions"><span class="live">● 演示模式</span><button class="icon-btn" onclick="toast('通知中心将在后续版本接入')" aria-label="通知">♧</button></div></header><div class="dash-content" id="dashContent"></div></main></div></section>
 </div><div class="toast" id="toast"></div>
 <script>
@@ -69,53 +111,80 @@ const $=s=>document.querySelector(s);let currentPage='overview';
 function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$('#'+id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(id==='dashboard')renderPage(currentPage)}
 
 const AUTH_API='https://api.lynli.me/api/auth';
-const emailInput=$('#username'),codeInput=$('#password'),sendCodeBtn=$('#sendCodeBtn'),loginBtn=$('#loginBtn'),authError=$('#authError'),authHint=$('#authHint');
-let codeCountdownTimer=null,codeSeconds=0;
+const emailInput=$('#username'),passwordInput=$('#loginPassword'),loginCodeInput=$('#loginCode'),sendCodeBtn=$('#sendCodeBtn'),loginBtn=$('#loginBtn'),authError=$('#authError'),authHint=$('#authHint'),passwordFields=$('#passwordFields'),codeFields=$('#codeFields'),passwordTab=$('#passwordTab'),codeTab=$('#codeTab'),rememberMe=$('#rememberMe');
+const resetModal=$('#resetModal'),resetForm=$('#resetForm'),resetEmail=$('#resetEmail'),resetCode=$('#resetCode'),newPassword=$('#newPassword'),confirmPassword=$('#confirmPassword'),resetError=$('#resetError'),resetSendCodeBtn=$('#resetSendCodeBtn'),resetSubmitBtn=$('#resetSubmitBtn');
+let loginMode='password',loginCountdownTimer=null,loginCodeSeconds=0,resetCountdownTimer=null,resetCodeSeconds=0;
+const rememberedEmail=localStorage.getItem('remembered_email');if(rememberedEmail){emailInput.value=rememberedEmail;rememberMe.checked=true}
 function showAuthError(message){authError.textContent=message||'请求失败，请稍后重试。';authError.classList.add('visible')}
 function clearAuthError(){authError.textContent='';authError.classList.remove('visible')}
-function validEmail(){const email=emailInput.value.trim();if(!emailInput.checkValidity()||!email){showAuthError('请输入有效的邮箱地址。');emailInput.focus();return ''}return email}
+function showResetError(message){resetError.textContent=message||'请求失败，请稍后重试。';resetError.classList.add('visible')}
+function clearResetError(){resetError.textContent='';resetError.classList.remove('visible')}
+function validEmail(input=emailInput,showError=showAuthError){const email=input.value.trim();if(!input.checkValidity()||!email){showError('请输入有效的邮箱地址。');input.focus();return ''}return email}
 async function postAuth(path,payload){
-  const response=await fetch(AUTH_API+path,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload)});
-  let result={};const raw=await response.text();
-  try{result=raw?JSON.parse(raw):{}}catch(_){result={detail:raw}}
-  if(!response.ok){throw new Error(result.detail||result.message||result.error||('请求失败（HTTP '+response.status+'）'))}
-  return result;
+ const response=await fetch(AUTH_API+path,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload)});
+ const raw=await response.text();let result={};try{result=raw?JSON.parse(raw):{}}catch(_){result={detail:raw}}
+ if(!response.ok)throw new Error(result.detail||result.message||result.error||('请求失败（HTTP '+response.status+'）'));
+ if(result.success===false||result.error)throw new Error(result.detail||result.message||result.error||'请求未成功。');
+ return result;
 }
+function switchLoginMode(mode){
+ loginMode=mode;const isPassword=mode==='password';
+ passwordTab.classList.toggle('active',isPassword);codeTab.classList.toggle('active',!isPassword);
+ passwordTab.setAttribute('aria-selected',String(isPassword));codeTab.setAttribute('aria-selected',String(!isPassword));
+ passwordFields.hidden=!isPassword;codeFields.hidden=isPassword;
+ passwordInput.required=isPassword;loginCodeInput.required=!isPassword;
+ passwordInput.value='';loginCodeInput.value='';clearAuthError();
+ authHint.textContent=isPassword?'请使用你的账户邮箱和密码登录。':'验证码将发送到你的邮箱，请注意查收。';
+ loginBtn.innerHTML=isPassword?'登录并进入控制台 <span>→</span>':'验证邮箱并进入控制台 <span>→</span>';
+}
+passwordTab.addEventListener('click',()=>switchLoginMode('password'));codeTab.addEventListener('click',()=>switchLoginMode('code'));
 sendCodeBtn.addEventListener('click',async()=>{
-  clearAuthError();const email=validEmail();if(!email)return;
-  if(codeSeconds>0)return;
-  sendCodeBtn.disabled=true;sendCodeBtn.textContent='发送中…';
-  try{
-    const result=await postAuth('/send-code',{email});
-    if(result.success===false||result.code===0||result.error)throw new Error(result.detail||result.message||result.error||'验证码发送失败。');
-    codeSeconds=60;sendCodeBtn.textContent='重新发送（60秒）';
-    codeCountdownTimer=setInterval(()=>{codeSeconds--;if(codeSeconds<=0){clearInterval(codeCountdownTimer);codeCountdownTimer=null;sendCodeBtn.disabled=false;sendCodeBtn.textContent='重新发送'}else{sendCodeBtn.textContent='重新发送（'+codeSeconds+'秒）'}},1000);
-    authHint.textContent=result.message||'如果邮箱已注册，请查收验证码邮件。';
-  }catch(error){
-    sendCodeBtn.disabled=false;sendCodeBtn.textContent='发送验证码';
-    showAuthError(error.message||'验证码发送失败，请稍后重试。');
-  }
+ clearAuthError();const email=validEmail();if(!email||loginCodeSeconds>0)return;
+ sendCodeBtn.disabled=true;sendCodeBtn.textContent='发送中…';
+ try{const result=await postAuth('/send-code',{email});loginCodeSeconds=60;sendCodeBtn.textContent='重新发送（60秒）';
+ loginCountdownTimer=setInterval(()=>{loginCodeSeconds--;if(loginCodeSeconds<=0){clearInterval(loginCountdownTimer);loginCountdownTimer=null;sendCodeBtn.disabled=false;sendCodeBtn.textContent='重新发送'}else sendCodeBtn.textContent='重新发送（'+loginCodeSeconds+'秒）'},1000);
+ authHint.textContent=result.message||'验证码已请求发送，请查收邮箱。';
+ }catch(error){sendCodeBtn.disabled=false;sendCodeBtn.textContent='发送验证码';showAuthError(error.message||'验证码发送失败。')}
 });
 $('#loginForm').addEventListener('submit',async e=>{
-  e.preventDefault();clearAuthError();
-  const email=validEmail();if(!email)return;
-  const code=codeInput.value.trim();if(!code){showAuthError('请输入邮箱验证码。');codeInput.focus();return}
-  loginBtn.disabled=true;loginBtn.textContent='正在验证…';
-  try{
-    const result=await postAuth('/login',{email,code});
-    const token=result.access_token||(result.data&&result.data.access_token);
-    if(!token)throw new Error(result.detail||result.message||'登录接口未返回 access_token。');
-    localStorage.setItem('access_token',token);
-    toast('登录成功');
-    authHint.textContent='登录成功，正在进入控制台…';
-    window.location.href='/xieyimianban/admin.html';
-  }catch(error){
-    showAuthError(error.message||'登录失败，请检查验证码后重试。');
-  }finally{
-    loginBtn.disabled=false;loginBtn.innerHTML='验证邮箱并进入控制台 <span>→</span>';
-  }
+ e.preventDefault();clearAuthError();const email=validEmail();if(!email)return;
+ const payload={email};let endpoint;
+ if(loginMode==='password'){const password=passwordInput.value;if(!password){showAuthError('请输入登录密码。');passwordInput.focus();return}payload.password=password;endpoint='/login-password'}
+ else{const code=loginCodeInput.value.trim();if(!code){showAuthError('请输入邮箱验证码。');loginCodeInput.focus();return}payload.code=code;endpoint='/login'}
+ loginBtn.disabled=true;loginBtn.textContent='正在登录…';
+ try{
+  const result=await postAuth(endpoint,payload);const token=result.access_token||(result.data&&result.data.access_token);
+  if(!token)throw new Error(result.detail||result.message||'登录接口未返回 access_token。');
+  if(loginMode==='password'&&!rememberMe.checked){sessionStorage.setItem('access_token',token);localStorage.removeItem('access_token');localStorage.removeItem('remembered_email')}
+  else{localStorage.setItem('access_token',token);sessionStorage.removeItem('access_token');if(loginMode==='password'&&rememberMe.checked)localStorage.setItem('remembered_email',email)}
+  if(loginMode==='code'){localStorage.setItem('access_token',token);sessionStorage.removeItem('access_token')}
+  toast('登录成功');authHint.textContent='登录成功，正在进入控制台…';window.location.href='/xieyimianban/admin.html';
+ }catch(error){showAuthError(error.message||'登录失败，请检查输入后重试。')}
+ finally{loginBtn.disabled=false;loginBtn.innerHTML=loginMode==='password'?'登录并进入控制台 <span>→</span>':'验证邮箱并进入控制台 <span>→</span>'}
 });
-
+$('#forgotPasswordBtn').addEventListener('click',()=>{clearResetError();resetModal.hidden=false;resetEmail.value=emailInput.value.trim();resetCode.value='';newPassword.value='';confirmPassword.value='';resetEmail.focus()});
+$('#closeResetModal').addEventListener('click',()=>{resetModal.hidden=true});
+resetModal.addEventListener('click',e=>{if(e.target===resetModal)resetModal.hidden=true});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!resetModal.hidden)resetModal.hidden=true});
+resetSendCodeBtn.addEventListener('click',async()=>{
+ clearResetError();const email=validEmail(resetEmail,showResetError);if(!email||resetCodeSeconds>0)return;
+ resetSendCodeBtn.disabled=true;resetSendCodeBtn.textContent='发送中…';
+ try{const result=await postAuth('/send-code',{email});resetCodeSeconds=60;resetSendCodeBtn.textContent='重新发送（60秒）';
+ resetCountdownTimer=setInterval(()=>{resetCodeSeconds--;if(resetCodeSeconds<=0){clearInterval(resetCountdownTimer);resetCountdownTimer=null;resetSendCodeBtn.disabled=false;resetSendCodeBtn.textContent='重新发送'}else resetSendCodeBtn.textContent='重新发送（'+resetCodeSeconds+'秒）'},1000);
+ if(result.message)resetError.textContent='';}
+ catch(error){resetSendCodeBtn.disabled=false;resetSendCodeBtn.textContent='发送验证码';showResetError(error.message||'验证码发送失败。')}
+});
+resetForm.addEventListener('submit',async e=>{
+ e.preventDefault();clearResetError();const email=validEmail(resetEmail,showResetError);if(!email)return;
+ const code=resetCode.value.trim(),password=newPassword.value;
+ if(!code){showResetError('请输入邮箱验证码。');resetCode.focus();return}
+ if(password.length<8){showResetError('新密码至少需要 8 位字符。');newPassword.focus();return}
+ if(password!==confirmPassword.value){showResetError('两次输入的新密码不一致。');confirmPassword.focus();return}
+ resetSubmitBtn.disabled=true;resetSubmitBtn.textContent='正在重置…';
+ try{await postAuth('/reset-password',{email,code,new_password:password});toast('密码重置成功，请使用新密码登录');resetModal.hidden=true;emailInput.value=email;switchLoginMode('password');passwordInput.value='';authHint.textContent='密码已重置，请使用新密码登录。'}
+ catch(error){showResetError(error.message||'密码重置失败，请检查验证码后重试。')}
+ finally{resetSubmitBtn.disabled=false;resetSubmitBtn.textContent='确认重置密码'}
+});
 function showPage(page,el){currentPage=page;document.querySelectorAll('.side-link[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));renderPage(page)}
 function renderPage(page){const titles={overview:'总览',users:'用户管理',nodes:'节点管理',bots:'机器人管理',settings:'系统设置'};$('#crumbTitle').textContent=titles[page]||'总览';const c=$('#dashContent');
 if(page==='overview'){c.innerHTML=`<div class="page-heading"><div><h1>系统总览</h1><p>欢迎回来，以下是你的节点运行概况。</p></div><button class="btn btn-soft" onclick="toast('当前显示演示数据')">↻ 刷新概览</button></div><div class="overview-grid"><div class="metric"><div class="metric-top">总用户数 <span class="metric-icon">♙</span></div><strong>128</strong><small><em>演示</em>　注册用户总量</small></div><div class="metric"><div class="metric-top">在线用户 <span class="metric-icon">◎</span></div><strong>96</strong><small><em>75%</em>　演示在线比例</small></div><div class="metric"><div class="metric-top">本周期流量 <span class="metric-icon">⌁</span></div><strong>68.4 GB</strong><small>总配额 120 GB（演示）</small></div><div class="metric"><div class="metric-top">运行节点 <span class="metric-icon">⌘</span></div><strong>3 <small style="font-size:12px">/ 3</small></strong><small><em>正常</em>　演示状态</small></div></div><div class="dash-columns"><section class="panel"><div class="panel-head"><h3>流量使用趋势</h3><small>最近 7 天 · 演示数据</small></div><div class="chart-large"><svg viewBox="0 0 600 220" preserveAspectRatio="none"><defs><linearGradient id="dashArea" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#51b6ff" stop-opacity=".3"/><stop offset="100%" stop-color="#51b6ff" stop-opacity="0"/></linearGradient></defs><g stroke="#e4effa" stroke-dasharray="4 5"><path d="M0 25H600M0 70H600M0 115H600M0 160H600M0 205H600"/></g><path d="M0 166 C35 145 48 178 90 126 S145 155 180 105 S232 121 270 88 S315 120 355 66 S400 92 445 78 S490 35 530 55 S570 40 600 22 L600 220 L0 220Z" fill="url(#dashArea)"/><path d="M0 166 C35 145 48 178 90 126 S145 155 180 105 S232 121 270 88 S315 120 355 66 S400 92 445 78 S490 35 530 55 S570 40 600 22" fill="none" stroke="#3a8cf4" stroke-width="3" stroke-linecap="round"/></svg></div></section><section class="panel"><div class="panel-head"><h3>流量配额使用</h3><small>按协议统计</small></div><div class="usage-list"><div class="usage-row"><div class="usage-label"><span>VLESS</span><strong>42.8 GB / 70 GB</strong></div><div class="bar"><span style="width:61%"></span></div></div><div class="usage-row"><div class="usage-label"><span>VMess</span><strong>18.6 GB / 35 GB</strong></div><div class="bar"><span style="width:53%"></span></div></div><div class="usage-row"><div class="usage-label"><span>Trojan</span><strong>7.0 GB / 15 GB</strong></div><div class="bar"><span style="width:47%"></span></div></div><p style="font-size:10px;color:#91a6bd;line-height:1.8;margin-top:23px">图表为界面演示数据，后续接入节点 API 后显示真实流量。</p></div></section></div><section class="panel table-panel"><div class="panel-head"><h3>最近用户</h3><button class="table-action" onclick="showPage('users')">查看全部 →</button></div><div class="table-scroll"><table><thead><tr><th>用户</th><th>协议</th><th>流量使用</th><th>状态</th><th>创建时间</th></tr></thead><tbody><tr><td><div class="user-name"><span class="mini-avatar">L</span>lin_001</div></td><td>VLESS</td><td>8.2 / 20 GB</td><td><span class="status">正常</span></td><td>2026-10-27</td></tr><tr><td><div class="user-name"><span class="mini-avatar">M</span>momo_02</div></td><td>VMess</td><td>12.6 / 15 GB</td><td><span class="status warn">接近限额</span></td><td>2026-10-26</td></tr><tr><td><div class="user-name"><span class="mini-avatar">A</span>alpha_03</div></td><td>Trojan</td><td>3.1 / 10 GB</td><td><span class="status">正常</span></td><td>2026-10-25</td></tr></tbody></table></div></section>`;}
