@@ -9,6 +9,7 @@ on:
       - feature/admin-dashboard
     paths:
       - "index.html"
+      - "admin.html"
       - "admin-dashboard.html"
       - "static/**"
       - ".github/workflows/pages.yml"
