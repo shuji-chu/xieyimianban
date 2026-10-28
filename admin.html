@@ -9,5 +9,5 @@
 </head>
 <body><main class="panel"><div class="brand"><div class="mark">✦</div><div>SOSKS5<div style="font-size:10px;font-weight:500;color:#87a8ce;letter-spacing:1.5px;margin-top:4px">NODE CONTROL SYSTEM</div></div></div><div class="eyebrow">AUTHENTICATED WORKSPACE</div><h1>欢迎进入控制台</h1><p>邮箱验证码认证已完成。这里是控制台占位页面，后续可以继续接入真实的用户、节点和流量 API。</p><div class="status" id="sessionStatus">正在检查登录状态…</div><a class="btn" href="/xieyimianban/">返回登录页</a></main>
 <script>
-(function(){const token=localStorage.getItem('access_token');const el=document.getElementById('sessionStatus');if(token){el.innerHTML='<strong>● 已保存登录令牌</strong><br>Token 已保存在当前浏览器的 localStorage 中。请勿在公共设备上保留登录状态。'}else{el.textContent='未找到登录令牌。请先返回登录页完成邮箱验证码验证。'}})();
+(function(){const token=sessionStorage.getItem('access_token')||localStorage.getItem('access_token');const el=document.getElementById('sessionStatus');if(token){el.innerHTML='<strong>● 已保存登录令牌</strong><br>Token 已保存在当前浏览器会话或 localStorage 中。请勿在公共设备上保留登录状态。'}else{el.textContent='未找到登录令牌。请先返回登录页完成邮箱验证码验证。'}})();
 </script></body></html>
