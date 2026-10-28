@@ -73,7 +73,7 @@ function buyerMarkup(buyer){
  const id=buyer.id??buyer.user_id??buyer.uid;
  const avatar=buyer.avatar_url??buyer.avatar??buyer.photo_url??buyer.photo;
  const initial=String(name).trim().charAt(0)||'？';
- const image=avatar?'<img class="avatar" src="'+escapeHtml(avatar)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement(\'span\'),{className:\'avatar avatar-fallback\',textContent:'+JSON.stringify(initial)+'}))">':'<span class="avatar avatar-fallback">'+escapeHtml(initial)+'</span>';
+ const image=avatar?'<img class="avatar" src="'+escapeHtml(avatar)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">':'<span class="avatar avatar-fallback">'+escapeHtml(initial)+'</span>';
  return '<div class="buyer">'+image+'<div><div class="buyer-name">'+escapeHtml(name)+'</div><div class="buyer-id">'+(id!==undefined&&id!==null?'ID: '+escapeHtml(id):'ID: —')+'</div></div></div>';
 }
 function renderInventory(items){
