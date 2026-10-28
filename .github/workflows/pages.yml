@@ -1,4 +1,5 @@
 name: Deploy UI Preview to GitHub Pages
+# Retry deployment after repository Actions permissions were reviewed.
 
 on:
   push:
