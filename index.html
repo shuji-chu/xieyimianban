@@ -86,6 +86,20 @@ html,body{background:#030914;color:#e8f3ff}
 table{background:transparent!important}th{background:rgba(8,27,48,.9)!important;color:#91a9c7!important}td{border-color:rgba(72,115,153,.2)!important;color:#c8d9eb!important}
 @media(max-width:700px){.ambient{background-attachment:scroll;background-position:center}}
 
+
+/* Cinematic real-space photo + dark glass finish */
+html,body{background:#030812;color:#eaf5ff}
+.ambient{background:linear-gradient(125deg,rgba(2,8,20,.86),rgba(3,17,39,.77) 48%,rgba(1,10,24,.9)),url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=2400&q=85") center/cover fixed no-repeat}
+.ambient:before{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);background:rgba(2,10,25,.32)}
+.ambient:after{background-image:radial-gradient(ellipse at 78% 12%,rgba(45,212,191,.12),transparent 34%),radial-gradient(ellipse at 8% 82%,rgba(59,130,246,.13),transparent 38%)}
+.login-card,.preview,.feature,.metric,.panel,.sidebar,.topbar,.stat{background:rgba(4,16,34,.78)!important;border-color:rgba(93,153,205,.28)!important;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);color:#eaf5ff}
+.login-card h2,.hero-copy h1,.feature h3,.page-heading h1,.panel-head h3,.preview-title{color:#eaf5ff}
+.login-message p,.hero-copy p,.feature p,.hint,.sub{color:#9bb5d4}
+.brandmark{background:linear-gradient(135deg,#3b82f6,#2dd4bf)!important;box-shadow:0 0 25px #2dd4bf40,0 8px 24px #3b82f633!important}
+.field input,.code-field input{background:rgba(3,13,28,.88)!important;border-color:#2b4d6c!important;color:#eaf5ff!important}
+.auth-tab,.send-code-btn,.btn-soft,.icon-btn{background:rgba(9,32,57,.9);border:1px solid rgba(75,157,205,.35);color:#dff6ff}
+.btn-primary{background:linear-gradient(110deg,#2479ee,#12a9b5);box-shadow:0 0 25px #1b9cc42b}
+.auth-tab.active{background:linear-gradient(110deg,#164a80,#12636b);color:#fff}
 </style>
 </head>
 <body>
