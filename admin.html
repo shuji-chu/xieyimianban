@@ -1,119 +1,56 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07111f">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#030914">
 <title>SOSKS5 · 管理控制台</title>
-<!-- inventory-dashboard-build: 2026-10-29; includes live /api/admin/inventory table -->
 <style>
-:root{color-scheme:dark;--bg:#07111f;--panel:#0d1b2d;--panel2:#102239;--line:#203850;--text:#e8f1fb;--muted:#8ea5bd;--blue:#56b7ff;--green:#4adea5;--red:#ff7887}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 8% -10%,#16375b 0,transparent 40%),var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-button{font:inherit;cursor:pointer}.topbar{height:70px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid var(--line);background:#07111fe8;position:sticky;top:0;z-index:5;backdrop-filter:blur(14px)}
-.brand{display:flex;align-items:center;gap:11px;font-weight:850;letter-spacing:1.5px}.mark{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,#1683e3,#4ce0ed);color:#061326;font-size:21px}.brand small{display:block;margin-top:3px;color:#8ca7c5;font-size:9px;letter-spacing:1.3px;font-weight:500}
-.account{display:flex;align-items:center;gap:14px;min-width:0}.email{font-size:13px;color:#b8cce0;max-width:min(38vw,360px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.logout{border:1px solid #36516c;border-radius:9px;padding:8px 13px;color:#d7e6f5;background:#102137;font-size:12px}.logout:hover{border-color:#ff7887;color:#ff9ca7}
-.shell{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:calc(100vh - 70px)}.sidebar{border-right:1px solid var(--line);padding:24px 14px;background:#091625a8}.nav-label{padding:0 12px 12px;color:#627f9e;font-size:10px;letter-spacing:1.8px}.nav-btn{width:100%;display:flex;align-items:center;gap:12px;border:1px solid transparent;background:transparent;color:#9ab0c8;text-align:left;padding:13px 12px;border-radius:11px;margin-bottom:6px;font-size:13px}.nav-btn .ico{width:24px;text-align:center;font-size:17px}.nav-btn.active{color:#e8f6ff;border-color:#234d70;background:linear-gradient(100deg,#153b60,#10243b);box-shadow:inset 3px 0 #56b7ff}.nav-btn:hover:not(.active){background:#102137;color:#e3effc}
-main{min-width:0;padding:clamp(20px,3vw,38px)}.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:24px}.eyebrow{font-size:10px;color:var(--blue);letter-spacing:2px;font-weight:800}.page-head h1{font-size:clamp(24px,3vw,32px);letter-spacing:-.7px;margin:8px 0 6px}.page-head p{margin:0;color:var(--muted);font-size:13px}.refresh{border:1px solid #2c4d69;background:#10243a;color:#cfe7ff;border-radius:10px;padding:10px 14px;font-size:12px;white-space:nowrap}.refresh:disabled{opacity:.5;cursor:wait}
-.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:22px}.stat{border:1px solid var(--line);border-radius:15px;background:linear-gradient(145deg,#10243a,#0a1727);padding:18px 20px;min-width:0}.stat-label{color:var(--muted);font-size:12px}.stat-value{font-size:27px;font-weight:800;margin-top:10px;letter-spacing:-.5px}.stat-value.blue{color:#8ad1ff}.stat-value.green{color:var(--green)}.stat-value.orange{color:#ffc878}
-.table-card{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#0a1727d9}.table-title{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 20px;border-bottom:1px solid var(--line)}.table-title strong{font-size:14px}.table-title span{font-size:11px;color:var(--muted)}.table-wrap{overflow:auto;max-width:100%}table{border-collapse:collapse;width:100%;min-width:700px;text-align:left}thead{background:#0e2034}th{font-size:11px;letter-spacing:.3px;font-weight:650;color:#8faac5;padding:14px 20px;white-space:nowrap}td{padding:14px 20px;border-top:1px solid #1a3046;font-size:12px;color:#c8d8e8}tbody tr:hover{background:#10223866}.account-cell{font-weight:650;color:#e3f0fc;overflow-wrap:anywhere}.status-pill{display:inline-flex;align-items:center;gap:7px;border-radius:99px;padding:5px 9px;font-size:11px;font-weight:700;white-space:nowrap}.status-pill:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}.status-pill.available{color:#55e2a7;background:#123b32}.status-pill.sold{color:#ff9ca7;background:#3b202b}.status-pill.unknown{color:#a8bed3;background:#1c2c3d}.buyer{display:flex;align-items:center;gap:10px;min-width:160px}.avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;background:#1c3854;border:1px solid #31516d;flex-shrink:0}.avatar-fallback{display:grid;place-items:center;color:#9cc9ed;font-size:13px;font-weight:800}.buyer-name{color:#e0edf9;font-size:12px;font-weight:650;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.buyer-id{color:#7994b1;font-size:10px;margin-top:4px;overflow-wrap:anywhere}.empty,.error-state,.loading-wrap{padding:36px 20px;text-align:center;color:var(--muted);font-size:13px}.error-state{color:#ff9ca7}.error-state p{margin:0 0 8px}.skeleton{height:14px;border-radius:6px;background:linear-gradient(90deg,#14283c 25%,#213b54 45%,#14283c 65%);background-size:220% 100%;animation:shimmer 1.25s infinite}.skeleton-row td{padding-top:18px;padding-bottom:18px}.skeleton-wide{width:min(240px,100%)}.skeleton-mid{width:100px}.skeleton-small{width:64px}@keyframes shimmer{to{background-position:-220% 0}}.hidden{display:none!important}.notice{margin-top:13px;color:#708ba7;font-size:11px;line-height:1.7}.node-placeholder{border:1px solid var(--line);border-radius:16px;background:#0a1727;padding:34px;color:var(--muted);font-size:13px;line-height:1.8}.node-placeholder strong{color:#e8f1fb}
-@media(max-width:760px){.topbar{padding:0 15px;height:62px}.brand{font-size:13px}.mark{width:32px;height:32px}.account{gap:8px}.email{max-width:36vw;font-size:11px}.logout{padding:7px 9px}.shell{grid-template-columns:1fr;min-height:calc(100vh - 62px)}.sidebar{display:flex;align-items:center;gap:8px;padding:10px 13px;border-right:0;border-bottom:1px solid var(--line);overflow-x:auto}.nav-label{display:none}.nav-btn{width:auto;white-space:nowrap;margin:0;padding:10px 12px}.nav-btn .ico{width:auto}main{padding:20px 13px}.stats{gap:8px}.stat{padding:13px 12px}.stat-label{font-size:10px}.stat-value{font-size:23px}.page-head{align-items:flex-start}.page-head p{max-width:250px;line-height:1.6}.refresh{padding:9px 10px}.table-title{padding:15px}.table-title span{max-width:45%;text-align:right;line-height:1.5}}
+:root{color-scheme:dark;--bg:#030914;--panel:rgba(5,18,37,.78);--line:rgba(93,153,205,.25);--text:#eaf5ff;--muted:#91a9c7;--blue:#3b82f6;--cyan:#2dd4bf;--green:#4adea5;--red:#ff8797;--orange:#ffc878}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);background:var(--bg)}
+body:before{content:"";position:fixed;inset:0;z-index:-2;background:linear-gradient(125deg,rgba(2,8,20,.84),rgba(3,17,39,.77) 48%,rgba(1,10,24,.89)),url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=2400&q=85") center/cover no-repeat}
+body:after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 78% 12%,rgba(45,212,191,.12),transparent 34%),radial-gradient(ellipse at 8% 82%,rgba(59,130,246,.13),transparent 38%)}
+button{font:inherit;cursor:pointer}.topbar{height:72px;padding:0 clamp(15px,3vw,36px);display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);background:rgba(3,13,29,.74);backdrop-filter:blur(22px);position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:11px;font-weight:850;letter-spacing:1.5px}.mark{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#3b82f6,#2dd4bf);box-shadow:0 0 25px #2dd4bf40,0 8px 24px #3b82f633;color:white;font-size:21px}.brand small{display:block;margin-top:3px;color:#8ca8c9;font-size:9px;letter-spacing:1.3px;font-weight:600}
+.account{display:flex;align-items:center;gap:14px;min-width:0}.email{font-size:13px;color:#b8cce0;max-width:min(38vw,360px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.logout,.refresh{border:1px solid #36516c;border-radius:10px;padding:9px 13px;color:#d7e6f5;background:rgba(13,36,61,.85);font-size:12px;white-space:nowrap}.logout:hover{border-color:var(--red);color:#ffb1ba}
+.shell{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:calc(100vh - 72px)}.sidebar{border-right:1px solid var(--line);padding:24px 14px;background:rgba(3,13,29,.55);backdrop-filter:blur(22px)}.nav-label{padding:0 12px 12px;color:#718ba8;font-size:10px;letter-spacing:1.8px}.nav-btn{width:100%;display:flex;align-items:center;gap:12px;border:1px solid transparent;background:transparent;color:#9ab0c8;text-align:left;padding:13px 12px;border-radius:11px;margin-bottom:6px;font-size:13px}.nav-btn .ico{width:24px;text-align:center;font-size:17px}.nav-btn.active{color:#effaff;border-color:#285577;background:linear-gradient(100deg,rgba(21,59,96,.95),rgba(12,34,57,.88));box-shadow:inset 3px 0 #2dd4bf,0 8px 25px #02091455}.nav-btn:hover:not(.active){background:#102137;color:#e3effc}
+main{min-width:0;padding:clamp(18px,3vw,38px)}.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:24px}.eyebrow{font-size:10px;color:#6ddcff;letter-spacing:2px;font-weight:800}.page-head h1{font-size:clamp(24px,3vw,32px);letter-spacing:-.7px;margin:8px 0 6px}.page-head p{margin:0;color:var(--muted);font-size:13px;line-height:1.6}.refresh{border-color:#2c4d69;color:#cfe7ff}.refresh:disabled{opacity:.5;cursor:wait}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:22px}.stat{border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,rgba(16,36,58,.88),rgba(5,17,33,.85));backdrop-filter:blur(24px);padding:19px 20px;min-width:0;box-shadow:0 18px 48px #0002}.stat-label{color:var(--muted);font-size:12px}.stat-value{font-size:28px;font-weight:800;margin-top:10px;letter-spacing:-.5px}.stat-value.blue{color:#8ad1ff}.stat-value.green{color:var(--green)}.stat-value.orange{color:var(--orange)}
+.table-card{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:rgba(5,18,37,.82);backdrop-filter:blur(24px);box-shadow:0 20px 55px #0002}.table-title{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}.table-title strong{font-size:14px}.table-title span{font-size:11px;color:var(--muted)}.table-wrap{overflow:auto;max-width:100%}table{border-collapse:collapse;width:100%;min-width:680px;text-align:left}thead{background:rgba(14,32,52,.94)}th{font-size:11px;letter-spacing:.3px;font-weight:650;color:#9bb4cf;padding:15px 20px;white-space:nowrap}td{padding:14px 20px;border-top:1px solid rgba(72,115,153,.2);font-size:12px;color:#c8d8e8}tbody tr:hover{background:#10223866}.account-cell{font-weight:650;color:#e3f0fc;overflow-wrap:anywhere}.status-pill{display:inline-flex;align-items:center;gap:7px;border-radius:99px;padding:6px 10px;font-size:11px;font-weight:700;white-space:nowrap}.status-pill:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}.status-pill.available,.status-pill.online{color:#55e2a7;background:#123b32}.status-pill.sold,.status-pill.offline{color:#ff9ca7;background:#3b202b}.status-pill.unknown{color:#a8bed3;background:#1c2c3d}.buyer{display:flex;align-items:center;gap:10px;min-width:160px}.avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;background:#1c3854;border:1px solid #31516d;flex-shrink:0}.avatar-fallback{display:grid;place-items:center;color:#b9f6ff;background:linear-gradient(135deg,#245a99,#147e84);font-size:13px;font-weight:800}.buyer-name{color:#e0edf9;font-size:12px;font-weight:650;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.buyer-id{color:#7994b1;font-size:10px;margin-top:4px;overflow-wrap:anywhere}.empty,.error-state,.loading-wrap{padding:36px 20px;text-align:center;color:var(--muted);font-size:13px}.error-state{color:#ffb0ba}.skeleton{height:14px;border-radius:6px;background:linear-gradient(90deg,#14283c 25%,#213b54 45%,#14283c 65%);background-size:220% 100%;animation:shimmer 1.25s infinite}.skeleton-row td{padding-top:18px;padding-bottom:18px}.skeleton-wide{width:min(240px,100%)}.skeleton-mid{width:100px}.skeleton-small{width:64px}@keyframes shimmer{to{background-position:-220% 0}}.hidden{display:none!important}.notice{margin-top:13px;color:#7894b2;font-size:11px;line-height:1.7}
+@media(max-width:760px){.topbar{padding:0 13px;height:64px}.brand{font-size:13px}.mark{width:33px;height:33px}.account{gap:8px}.email{max-width:36vw;font-size:11px}.logout{padding:8px 9px}.shell{grid-template-columns:1fr;min-height:calc(100vh - 64px)}.sidebar{display:flex;align-items:center;gap:8px;padding:10px 13px;border-right:0;border-bottom:1px solid var(--line);overflow-x:auto}.nav-label{display:none}.nav-btn{width:auto;white-space:nowrap;margin:0;padding:10px 12px}.nav-btn .ico{width:auto}main{padding:20px 13px}.stats{gap:8px}.stat{padding:13px 12px}.stat-label{font-size:10px}.stat-value{font-size:23px}.page-head{align-items:flex-start}.page-head p{max-width:250px;line-height:1.6}.refresh{padding:9px 10px}.table-title{padding:15px}.table-title span{max-width:48%;text-align:right;line-height:1.5}}
+@media(max-width:390px){.brand small{letter-spacing:.7px;font-size:8px}.stats{grid-template-columns:1fr}.stat{display:flex;align-items:center;justify-content:space-between}.stat-value{margin:0}.page-head{gap:8px}.page-head h1{font-size:23px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
-</style>
-</head>
+</style></head>
 <body>
 <header class="topbar"><div class="brand"><div class="mark">✦</div><div>SOSKS5<small>ADMIN CONTROL CENTER</small></div></div><div class="account"><span class="email" id="accountEmail">正在读取账户…</span><button class="logout" id="logoutBtn" type="button">退出登录 ↗</button></div></header>
-<div class="shell">
-<aside class="sidebar" aria-label="主导航"><div class="nav-label">工作空间</div><button class="nav-btn active" data-page="inventory" type="button"><span class="ico">▤</span>库存管理</button><button class="nav-btn" data-page="nodes" type="button"><span class="ico">⌘</span>节点监控</button></aside>
+<div class="shell"><aside class="sidebar" aria-label="主导航"><div class="nav-label">工作空间</div><button class="nav-btn active" data-page="inventory" type="button"><span class="ico">▤</span>库存管理</button><button class="nav-btn" data-page="nodes" type="button"><span class="ico">⌘</span>节点监控</button></aside>
 <main>
-<section id="inventoryPage">
-<div class="page-head"><div><div class="eyebrow">INVENTORY / OVERVIEW</div><h1>库存管理</h1><p>实时读取服务端库存与归属信息。</p></div><button class="refresh" id="refreshBtn" type="button">↻ 刷新数据</button></div>
-<div class="stats">
-<div class="stat"><div class="stat-label">库存总量</div><div class="stat-value blue" id="totalCount">—</div></div>
-<div class="stat"><div class="stat-label">可售数量</div><div class="stat-value green" id="availableCount">—</div></div>
-<div class="stat"><div class="stat-label">已售数量</div><div class="stat-value orange" id="soldCount">—</div></div>
-</div>
-<div class="table-card"><div class="table-title"><strong>库存明细</strong><span id="tableMeta">等待服务端响应</span></div><div class="table-wrap"><table><thead><tr><th>邮箱账号</th><th>状态</th><th>归属者</th></tr></thead><tbody id="inventoryBody"><tr><td colspan="3"><div class="loading-wrap">正在连接库存 API…</div></td></tr></tbody></table></div></div>
-<p class="notice">数据直接来自服务器接口；此页面不会生成或填充模拟库存。</p>
-</section>
-<section id="nodesPage" class="hidden"><div class="page-head"><div><div class="eyebrow">NODES / MONITORING</div><h1>节点监控</h1><p>节点数据尚未接入当前页面。</p></div></div><div class="node-placeholder"><strong>节点监控 API 尚未配置</strong><br>当前只展示真实库存接口返回的数据。配置节点接口后，才能展示在线状态、延迟与流量等监控指标。</div></section>
-</main>
-</div>
+<section id="inventoryPage"><div class="page-head"><div><div class="eyebrow">INVENTORY / OVERVIEW</div><h1>库存管理</h1><p>实时读取服务端库存与归属信息。</p></div><button class="refresh" id="refreshBtn" type="button">↻ 刷新数据</button></div>
+<div class="stats"><div class="stat"><div class="stat-label">库存总量</div><div class="stat-value blue" id="totalCount">—</div></div><div class="stat"><div class="stat-label">可售数量</div><div class="stat-value green" id="availableCount">—</div></div><div class="stat"><div class="stat-label">已售数量</div><div class="stat-value orange" id="soldCount">—</div></div></div>
+<div class="table-card"><div class="table-title"><strong>库存明细</strong><span id="inventoryMeta">等待服务端响应</span></div><div class="table-wrap"><table><thead><tr><th>邮箱账号</th><th>状态</th><th>归属者</th></tr></thead><tbody id="inventoryBody"><tr><td colspan="3"><div class="loading-wrap">正在连接库存 API…</div></td></tr></tbody></table></div></div><p class="notice">数据直接来自服务端接口，不生成模拟库存。</p></section>
+<section id="nodesPage" class="hidden"><div class="page-head"><div><div class="eyebrow">NODES / MONITORING</div><h1>节点监控</h1><p>节点名称、网络地址、协议与连接状态。</p></div><button class="refresh" id="refreshNodesBtn" type="button">↻ 刷新节点</button></div>
+<div class="table-card"><div class="table-title"><strong>节点列表</strong><span id="nodesMeta">等待服务端响应</span></div><div class="table-wrap"><table><thead><tr><th>节点名称</th><th>IP 地址</th><th>端口</th><th>协议</th><th>状态</th></tr></thead><tbody id="nodesBody"><tr><td colspan="5"><div class="loading-wrap">正在连接节点 API…</div></td></tr></tbody></table></div></div><p class="notice">节点状态优先采用接口返回值；未提供状态字段时按要求显示在线。</p></section>
+</main></div>
 <script>
 (function(){
 'use strict';
-const API='https://api.lynli.me/api/admin/inventory';
-const LOGIN_URL='/xieyimianban/';
+const API_BASE='https://api.lynli.me/api/admin',LOGIN_URL='/xieyimianban/';
 const $=s=>document.querySelector(s);
-const body=$('#inventoryBody'),refreshBtn=$('#refreshBtn'),tableMeta=$('#tableMeta');
-let loading=false;
+let inventoryLoading=false,nodesLoading=false;
 function getToken(){return localStorage.getItem('access_token')||sessionStorage.getItem('access_token')}
-function parseJwtEmail(token){
- try{const part=token.split('.')[1];if(!part)return '';const b64=part.replace(/-/g,'+').replace(/_/g,'/');const json=decodeURIComponent(Array.from(atob(b64),c=>'%'+c.charCodeAt(0).toString(16).padStart(2,'0')).join(''));const p=JSON.parse(json);return p.email||p.sub||''}catch(_){return ''}
-}
+function parseJwtEmail(token){try{const part=token.split('.')[1];if(!part)return '';const b64=part.replace(/-/g,'+').replace(/_/g,'/');const json=decodeURIComponent(Array.from(atob(b64),c=>'%'+c.charCodeAt(0).toString(16).padStart(2,'0')).join(''));const p=JSON.parse(json);return p.email||p.sub||p.preferred_username||''}catch(_){return ''}}
 function clearAuthAndRedirect(){localStorage.removeItem('access_token');sessionStorage.removeItem('access_token');localStorage.removeItem('remembered_email');window.location.replace(LOGIN_URL)}
-function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function showSkeleton(){
- body.innerHTML=Array.from({length:7},()=>'<tr class="skeleton-row"><td><div class="skeleton skeleton-wide"></div></td><td><div class="skeleton skeleton-small"></div></td><td><div class="skeleton skeleton-mid"></div></td></tr>').join('');
- tableMeta.textContent='正在加载…';$('#totalCount').textContent='…';$('#availableCount').textContent='…';$('#soldCount').textContent='…';
-}
-function getInventoryArray(payload){
- if(Array.isArray(payload))return payload;
- for(const path of ['items','inventory','results','data','records']){
-  const value=payload&&payload[path];if(Array.isArray(value))return value;
-  if(value&&typeof value==='object'){for(const nested of ['items','inventory','results','records'])if(Array.isArray(value[nested]))return value[nested]}
- }
- return null;
-}
-function statusFor(item){
- const raw=String(item.status??item.state??'').toLowerCase();
- if(raw==='sold')return {label:'已售',className:'sold'};
- if(raw==='available')return {label:'可售',className:'available'};
- return {label:raw?String(item.status??item.state):'未知',className:'unknown'};
-}
-function buyerMarkup(buyer){
- if(!buyer||typeof buyer!=='object')return '<span>—</span>';
- const name=buyer.nickname??buyer.name??buyer.username??'未命名用户';
- const id=buyer.id??buyer.user_id??buyer.uid;
- const avatar=buyer.avatar_url??buyer.avatar??buyer.photo_url??buyer.photo;
- const initial=String(name).trim().charAt(0)||'？';
- const image=avatar?'<img class="avatar" src="'+escapeHtml(avatar)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">':'<span class="avatar avatar-fallback">'+escapeHtml(initial)+'</span>';
- return '<div class="buyer">'+image+'<div><div class="buyer-name">'+escapeHtml(name)+'</div><div class="buyer-id">'+(id!==undefined&&id!==null?'ID: '+escapeHtml(id):'ID: —')+'</div></div></div>';
-}
-function renderInventory(items){
- const available=items.filter(x=>String(x.status??x.state??'').toLowerCase()==='available').length;
- const sold=items.filter(x=>String(x.status??x.state??'').toLowerCase()==='sold').length;
- $('#totalCount').textContent=items.length.toLocaleString('zh-CN');$('#availableCount').textContent=available.toLocaleString('zh-CN');$('#soldCount').textContent=sold.toLocaleString('zh-CN');
- tableMeta.textContent='服务端返回 '+items.length.toLocaleString('zh-CN')+' 条记录';
- if(!items.length){body.innerHTML='<tr><td colspan="3"><div class="empty">接口返回了空库存，没有可展示的记录。</div></td></tr>';return}
- body.innerHTML=items.map(item=>{
-  const email=item.email??item.email_account??item.account??item.emailAddress??'';
-  const status=statusFor(item);const buyer=item.buyer??item.owner??null;
-  return '<tr><td class="account-cell">'+(email?escapeHtml(email):'—')+'</td><td><span class="status-pill '+status.className+'">'+escapeHtml(status.label)+'</span></td><td>'+buyerMarkup(buyer)+'</td></tr>';
- }).join('');
-}
-async function loadInventory(){
- if(loading)return;const token=getToken();if(!token){clearAuthAndRedirect();return}
- loading=true;refreshBtn.disabled=true;refreshBtn.textContent='加载中…';showSkeleton();
- try{
-  const response=await fetch(API,{method:'GET',headers:{'Accept':'application/json','Authorization':'Bearer '+token}});
-  if(response.status===401){clearAuthAndRedirect();return}
-  if(!response.ok)throw new Error('库存接口请求失败（HTTP '+response.status+'）');
-  let data;try{data=await response.json()}catch(_){throw new Error('服务器返回的内容不是有效 JSON')}
-  const items=getInventoryArray(data);
-  if(!items)throw new Error('接口响应中未找到库存数组，请核对 API 返回结构');
-  renderInventory(items);
- }catch(error){
-  // Any API failure invalidates the local view and returns to the login page as requested.
-  clearAuthAndRedirect();
- }finally{loading=false;refreshBtn.disabled=false;refreshBtn.textContent='↻ 刷新数据'}
-}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function arrayFrom(payload,keys){if(Array.isArray(payload))return payload;for(const k of keys){const v=payload&&payload[k];if(Array.isArray(v))return v;if(v&&typeof v==='object'){for(const n of keys){if(Array.isArray(v[n]))return v[n]}}}return null}
+async function request(path){const token=getToken();if(!token){clearAuthAndRedirect();throw new Error('登录状态已失效')}const res=await fetch(API_BASE+path,{method:'GET',headers:{Accept:'application/json',Authorization:'Bearer '+token}});if(res.status===401){clearAuthAndRedirect();throw new Error('登录已过期')}if(!res.ok)throw new Error('请求失败（HTTP '+res.status+'）');return res.json()}
+function skeleton(target,cols){$(target).innerHTML=Array.from({length:6},()=>'<tr class="skeleton-row">'+Array.from({length:cols},(_,i)=>'<td><div class="skeleton '+(i===0?'skeleton-wide':i===cols-1?'skeleton-mid':'skeleton-small')+'"></div></td>').join('')+'</tr>').join('')}
+function statusInventory(item){const raw=String(item.status??item.state??'').toLowerCase();if(['sold','已售','used'].includes(raw))return {label:'已售',cls:'sold',sold:true};if(['available','可售','in_stock','unused'].includes(raw))return {label:'可售',cls:'available',sold:false};return {label:item.status??item.state??'未知',cls:'unknown',sold:false}}
+function buyerMarkup(buyer){if(!buyer||typeof buyer!=='object')return '<span>—</span>';const name=buyer.nickname??buyer.name??buyer.username??buyer.email??'未命名用户';const id=buyer.id??buyer.user_id??buyer.uid;const avatar=buyer.avatar_url??buyer.avatar??buyer.photo_url??buyer.photo;const initial=String(name).trim().charAt(0)||'？';const pic=avatar?'<img class="avatar" src="'+esc(avatar)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">':'<span class="avatar avatar-fallback">'+esc(initial)+'</span>';return '<div class="buyer">'+pic+'<div><div class="buyer-name">'+esc(name)+'</div><div class="buyer-id">'+(id!=null?'ID: '+esc(id):'')+'</div></div></div>'}
+async function loadInventory(){if(inventoryLoading)return;inventoryLoading=true;const b=$('#refreshBtn');b.disabled=true;b.textContent='加载中…';skeleton('#inventoryBody',3);$('#inventoryMeta').textContent='正在加载…';$('#totalCount').textContent='…';$('#availableCount').textContent='…';$('#soldCount').textContent='…';try{const data=await request('/inventory');const items=arrayFrom(data,['items','inventory','results','data','records']);if(!items)throw new Error('库存 API 返回结构无法识别');let available=0,sold=0;const rows=items.map(item=>{const st=statusInventory(item);if(st.cls==='available')available++;if(st.sold)sold++;const email=item.email??item.email_account??item.account??item.emailAddress??item.email_address??item.login??'';const buyer=item.buyer??item.owner??item.buyer_info??item.user??null;return '<tr><td class="account-cell">'+(email?esc(email):'—')+'</td><td><span class="status-pill '+st.cls+'">'+esc(st.label)+'</span></td><td>'+buyerMarkup(buyer)+'</td></tr>'}).join('');$('#totalCount').textContent=items.length.toLocaleString('zh-CN');$('#availableCount').textContent=available.toLocaleString('zh-CN');$('#soldCount').textContent=sold.toLocaleString('zh-CN');$('#inventoryMeta').textContent='服务端返回 '+items.length.toLocaleString('zh-CN')+' 条记录';$('#inventoryBody').innerHTML=rows||'<tr><td colspan="3"><div class="empty">接口返回空库存。</div></td></tr>'}catch(e){if(!location.pathname.endsWith('/')){$('#inventoryBody').innerHTML='<tr><td colspan="3"><div class="error-state">'+esc(e.message||'库存加载失败')+'</div></td></tr>'}$('#inventoryMeta').textContent='加载失败'}finally{inventoryLoading=false;b.disabled=false;b.textContent='↻ 刷新数据'}}
+function nodeStatus(item){const raw=String(item.status??item.state??item.online_status??'').toLowerCase();if(['offline','down','disabled','error','离线','故障'].includes(raw))return {label:item.status??item.state??'离线',cls:'offline'};return {label:item.status??item.state??item.online_status??'在线',cls:'online'}}
+async function loadNodes(){if(nodesLoading)return;nodesLoading=true;const b=$('#refreshNodesBtn');b.disabled=true;b.textContent='加载中…';skeleton('#nodesBody',5);$('#nodesMeta').textContent='正在加载…';try{const data=await request('/nodes');const items=arrayFrom(data,['items','nodes','results','data','records']);if(!items)throw new Error('节点 API 返回结构无法识别');$('#nodesBody').innerHTML=items.map(n=>{const name=n.name??n.node_name??n.title??n.label??'未命名节点';const ip=n.ip??n.host??n.address??n.server_ip??'—';const port=n.port??n.server_port??'—';const protocol=String(n.protocol??n.type??n.proto??'—').toUpperCase();const st=nodeStatus(n);return '<tr><td class="account-cell">'+esc(name)+'</td><td>'+esc(ip)+'</td><td>'+esc(port)+'</td><td>'+esc(protocol)+'</td><td><span class="status-pill '+st.cls+'">'+esc(st.label)+'</span></td></tr>'}).join('')||'<tr><td colspan="5"><div class="empty">接口返回空节点列表。</div></td></tr>';$('#nodesMeta').textContent='服务端返回 '+items.length.toLocaleString('zh-CN')+' 个节点'}catch(e){$('#nodesBody').innerHTML='<tr><td colspan="5"><div class="error-state">'+esc(e.message||'节点加载失败')+'</div></td></tr>';$('#nodesMeta').textContent='加载失败'}finally{nodesLoading=false;b.disabled=false;b.textContent='↻ 刷新节点'}}
+function switchPage(page){document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));$('#inventoryPage').classList.toggle('hidden',page!=='inventory');$('#nodesPage').classList.toggle('hidden',page!=='nodes');if(page==='inventory')loadInventory();else loadNodes()}
 $('#accountEmail').textContent=localStorage.getItem('remembered_email')||parseJwtEmail(getToken())||'已登录账户';
-$('#logoutBtn').addEventListener('click',clearAuthAndRedirect);
-refreshBtn.addEventListener('click',loadInventory);
-document.querySelectorAll('.nav-btn').forEach(btn=>btn.addEventListener('click',()=>{
- document.querySelectorAll('.nav-btn').forEach(x=>x.classList.toggle('active',x===btn));
- const inventory=btn.dataset.page==='inventory';$('#inventoryPage').classList.toggle('hidden',!inventory);$('#nodesPage').classList.toggle('hidden',inventory);
- if(inventory)loadInventory();
-}));
+$('#logoutBtn').addEventListener('click',clearAuthAndRedirect);$('#refreshBtn').addEventListener('click',loadInventory);$('#refreshNodesBtn').addEventListener('click',loadNodes);
+document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchPage(b.dataset.page)));
 if(!getToken())clearAuthAndRedirect();else loadInventory();
 })();
-</script>
-</body></html>
+</script></body></html>
