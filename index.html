@@ -64,6 +64,28 @@ html,body{background:#030914;color:#e6f3ff}
 .reset-modal h2{margin:0 32px 8px 0;color:#eaf6ff;font-size:23px}.reset-modal .sub{margin-bottom:18px}.reset-modal .field{margin:14px 0}.reset-modal .btn{margin-top:8px}.modal-close{position:absolute;right:17px;top:14px;width:34px;height:34px;border:1px solid #28527c;border-radius:10px;background:#0d2a4a;color:#b8d5f4;font-size:23px;line-height:1}
 .send-code-btn:disabled{opacity:.55;cursor:not-allowed}
 @media(max-width:560px){.reset-modal{padding:27px 19px}.auth-tab{font-size:12px}}
+
+/* FINAL DEEP-SPACE GLASS PASS */
+:root{--blue:#3b82f6;--blue2:#2dd4bf;--navy:#061326;--ink:#e8f3ff;--muted:#91a9c7;--line:#24405d;--glass:rgba(5,17,35,.76);--shadow:0 28px 90px rgba(0,0,0,.48)}
+html,body{background:#030914;color:#e8f3ff}
+.ambient{background-image:linear-gradient(125deg,rgba(2,8,20,.78),rgba(3,17,39,.72) 48%,rgba(1,10,24,.86)),url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=2400&q=85");background-size:cover;background-position:center;background-attachment:fixed}
+.ambient:before{background:radial-gradient(ellipse at 70% 22%,rgba(45,212,191,.13),transparent 35%),repeating-linear-gradient(115deg,transparent 0 64px,rgba(76,170,255,.045) 65px 66px,transparent 67px 130px)}
+.ambient:after{background-image:linear-gradient(rgba(80,145,220,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(80,145,220,.055) 1px,transparent 1px)}
+.brandmark,.mark,.feature-icon,.metric-icon{background:linear-gradient(135deg,#3b82f6,#2dd4bf)!important;box-shadow:0 0 25px rgba(45,212,191,.24),0 8px 25px rgba(59,130,246,.22)!important;color:#fff}
+.brand,.brandtext{color:#e8f3ff!important}.brand small{color:#8ca8c9!important}
+.topbar,.sidebar{background:rgba(3,13,29,.72)!important;border-color:rgba(78,132,184,.26)!important;backdrop-filter:blur(22px)}
+.login-layout{background:transparent!important}
+.login-card,.preview,.feature,.metric,.panel,.table-panel,.stat,.dash-columns>.panel{background:rgba(4,17,36,.78)!important;border:1px solid rgba(93,153,205,.28)!important;backdrop-filter:blur(24px);box-shadow:0 22px 70px rgba(0,0,0,.25)}
+.login-card h2,.hero-copy h1,.page-heading h1,.metric strong,.panel-head h3,.preview-title{color:#e8f3ff!important}
+.hero-copy p,.login-message p,.sub,.hint,.feature p,.page-heading p,.crumb,.metric-top,.metric small,.panel-head small{color:#91a9c7!important}
+.field span{color:#bad0e8!important}.field input{background:rgba(3,13,28,.85)!important;border-color:#28496b!important;color:#e8f3ff!important}
+.field input::placeholder{color:#718eae!important}
+.btn-primary{background:linear-gradient(115deg,#3b82f6,#2dd4bf)!important;box-shadow:0 0 25px rgba(45,212,191,.16)!important}
+.btn-soft,.icon-btn{background:rgba(13,36,61,.85)!important;color:#bfe6ff!important;border-color:#2a4b6d!important}
+.eyebrow{background:rgba(5,25,48,.76)!important;border-color:#28577c!important;color:#70d8ff!important}
+table{background:transparent!important}th{background:rgba(8,27,48,.9)!important;color:#91a9c7!important}td{border-color:rgba(72,115,153,.2)!important;color:#c8d9eb!important}
+@media(max-width:700px){.ambient{background-attachment:scroll;background-position:center}}
+
 </style>
 </head>
 <body>
@@ -155,9 +177,7 @@ $('#loginForm').addEventListener('submit',async e=>{
  try{
   const result=await postAuth(endpoint,payload);const token=result.access_token||(result.data&&result.data.access_token);
   if(!token)throw new Error(result.detail||result.message||'登录接口未返回 access_token。');
-  if(loginMode==='password'&&!rememberMe.checked){sessionStorage.setItem('access_token',token);localStorage.removeItem('access_token');localStorage.removeItem('remembered_email')}
-  else{localStorage.setItem('access_token',token);sessionStorage.removeItem('access_token');if(loginMode==='password'&&rememberMe.checked)localStorage.setItem('remembered_email',email)}
-  if(loginMode==='code'){localStorage.setItem('access_token',token);sessionStorage.removeItem('access_token')}
+  localStorage.setItem('access_token',token);sessionStorage.removeItem('access_token');localStorage.setItem('remembered_email',email);
   toast('登录成功');authHint.textContent='登录成功，正在进入控制台…';window.location.href='/xieyimianban/admin.html';
  }catch(error){showAuthError(error.message||'登录失败，请检查输入后重试。')}
  finally{loginBtn.disabled=false;loginBtn.innerHTML=loginMode==='password'?'登录并进入控制台 <span>→</span>':'验证邮箱并进入控制台 <span>→</span>'}
