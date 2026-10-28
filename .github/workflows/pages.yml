@@ -4,6 +4,7 @@ name: Deploy UI Preview to GitHub Pages
 on:
   push:
     branches:
+      - main
       - ui/blue-white-tech-dashboard
       - feature/admin-dashboard
     paths:
