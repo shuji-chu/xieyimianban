@@ -1,0 +1,45 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#edf6ff"><link rel="icon" type="image/png" href="../logo.png"><link rel="apple-touch-icon" href="../logo.png"><meta property="og:title" content="SOSKS5 开发者文档"><meta property="og:image" content="../logo.png"><title>SOSKS5 · 开发者文档</title><style>
+:root{--ink:#17375e;--muted:#6b87a7;--blue:#287bd5;--line:#d6e8f8}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0,#d8efff,transparent 35%),linear-gradient(145deg,#f8fcff,#eaf5ff);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif;color:var(--ink)}header{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(16px,5vw,70px);background:#ffffffc9;border-bottom:1px solid var(--line);position:sticky;top:0;backdrop-filter:blur(18px)}.brand{display:flex;align-items:center;gap:10px;font-weight:900}.brand img{width:38px;height:38px;object-fit:contain}.brand small{display:block;color:#7a96b5;font-size:9px;letter-spacing:1.6px}a{color:#2679c8;text-decoration:none}header nav{display:flex;gap:18px;font-size:13px}.wrap{max-width:1050px;margin:auto;padding:42px 20px 70px}.hero{padding:30px 0}.eyebrow{font-size:11px;font-weight:800;letter-spacing:2px;color:#2d8bd7}.hero h1{font-size:clamp(32px,5vw,52px);margin:12px 0}.hero p{color:var(--muted);line-height:1.8;max-width:720px}.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px}.side,.card{border:1px solid var(--line);background:#ffffffcf;border-radius:18px;box-shadow:0 14px 40px #3679ae0b}.side{padding:18px;height:max-content;position:sticky;top:90px}.side a{display:block;padding:10px 8px;border-radius:9px;font-size:13px}.side a:hover{background:#eaf5ff}.content{display:grid;gap:16px}.card{padding:22px;min-width:0}.card h2{margin:0 0 12px;font-size:21px}.card p,.card li{color:#617f9f;font-size:13px;line-height:1.8}pre{overflow:auto;background:#102d4a;color:#d9f0ff;border-radius:12px;padding:16px;font-size:12px;line-height:1.7}code{font-family:ui-monospace,monospace}.pill{display:inline-block;background:#e5f4ff;color:#2875b9;border-radius:99px;padding:5px 9px;font-size:11px}.warning{border-left:3px solid #e3a342;padding:10px 14px;background:#fff8e8;color:#8a672c;font-size:12px;line-height:1.7;border-radius:8px}footer{text-align:center;padding:28px;color:#7d98b5;font-size:12px;border-top:1px solid var(--line)}@media(max-width:720px){.layout{grid-template-columns:1fr}.side{position:static;display:flex;gap:5px;overflow:auto}.side a{white-space:nowrap}.wrap{padding-top:25px}header nav a:nth-child(2){display:none}}
+</style></head><body><header><div class="brand"><img src="../logo.png" alt="SOSKS5"><div>SOSKS5<small>DEVELOPER PORTAL</small></div></div><nav><a href="../shop/">售卖网站</a><a href="../">官网首页</a><a href="../admin.html">管理面板</a></nav></header><main class="wrap"><section class="hero"><div class="eyebrow">API REFERENCE / V1</div><h1>开发者文档</h1><p>通过 HTTPS 接入 SOSKS5 商品、库存与订单服务。此页面是接口接入说明模板；请以服务端实际路由、字段和鉴权策略为准。所有分销商密钥必须仅保存在服务端，不要写进浏览器代码或公开仓库。</p><span class="pill">JSON · HTTPS · REST</span></section><div class="layout"><nav class="side"><a href="#overview">快速开始</a><a href="#products">商品列表</a><a href="#inventory">库存查询</a><a href="#orders">创建订单</a><a href="#auth">鉴权与错误码</a><a href="#webhooks">支付回调</a><a href="#support">AI 客服</a></nav><div class="content"><section class="card" id="overview"><h2>快速开始</h2><p>API 基础地址（请确认部署环境）：</p><pre><code>https://api.lynli.me/api/shop</code></pre><p>示例请求使用公开商品查询路由。若服务端要求分销商 Token，请在服务器端添加请求头。</p><pre><code>curl -sS 'https://api.lynli.me/api/shop/products' \
+  -H 'Accept: application/json'</code></pre></section><section class="card" id="products"><h2>GET /products · 商品列表</h2><p>读取可售商品、套餐规格和标价。建议使用服务端返回的商品 ID 创建订单，不要由客户端自行计算最终应付金额。</p><pre><code>GET /api/shop/products
+Accept: application/json
+
+// 示例响应结构（字段以实际 API 为准）
+{
+  "products": [
+    {
+      "id": "plan_188g_30d",
+      "name": "188G / 30天",
+      "price": 0,
+      "currency": "CNY",
+      "stock": 0
+    }
+  ]
+}</code></pre></section><section class="card" id="inventory"><h2>GET /inventory · 库存查询</h2><p>查询可售库存。建议对分销商接口配置限流、权限范围和审计日志；不要向公开客户端返回账号密码或完整未售库存明文。</p><pre><code>GET /api/shop/inventory
+Accept: application/json</code></pre></section><section class="card" id="orders"><h2>POST /orders · 创建订单</h2><p>服务端应重新校验商品、价格、库存、幂等键和支付渠道。成功后返回订单号与支付跳转地址。</p><pre><code>POST /api/shop/orders
+Content-Type: application/json
+
+{
+  "product_id": "plan_188g_30d",
+  "email": "buyer@example.com",
+  "payment_method": "alipay"
+}
+
+// payment_method 示例：alipay / wechat / usdt_trc20</code></pre><div class="warning">示例只描述预期接口形状，不代表已验证的真实响应。请以已部署后端的 OpenAPI/实际返回为准。</div></section><section class="card" id="auth"><h2>鉴权与错误码</h2><p>公开读取接口可按服务端策略免鉴权；分销商私有接口应使用独立 Token，并在服务端校验权限、配额和有效期。</p><pre><code>Authorization: Bearer YOUR_PARTNER_TOKEN
+Accept: application/json
+
+常见状态码：
+200  请求成功
+400  参数错误
+401  Token 缺失或无效
+403  权限不足
+404  商品或订单不存在
+409  库存不足 / 幂等冲突
+429  请求过于频繁
+500  服务端异常</code></pre></section><section class="card" id="webhooks"><h2>支付回调与自动发号</h2><p>支付网关回调应由后端验签，核对金额、币种、商户订单号及交易号，并通过幂等事务更新订单。只有确认支付成功后才触发发号；重复回调不能重复发货。</p><div class="warning">不要相信浏览器跳转结果作为付款凭证。USDT TRC20 需在服务端核验链上交易、目标地址、金额、确认数与订单绑定关系。</div></section><section class="card" id="support"><h2>POST /ai/chat · AI 客服</h2><p>网站客服将问题发送至后端 AI 接口。智谱 API Key 等密钥只能放在服务端环境变量中，设置超时、限流和输入输出审查。</p><pre><code>POST /api/shop/ai/chat
+Content-Type: application/json
+
+{
+  "message": "188G 套餐如何配置节点？",
+  "context": "套餐购买与节点配置"
+}</code></pre></section></div></div></main><footer>SOSKS5 Developer Portal · 请勿将分销商 Token 或支付密钥提交到公开前端。</footer></body></html>
