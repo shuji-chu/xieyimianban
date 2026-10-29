@@ -61,4 +61,56 @@ async function loadWorld(){let root=q('#worldNodeMap');try{let d,err;for(let p o
 async function lookupIp(e){e.preventDefault();let ip=q('#ixIp').value.trim();q('#ixStatus').textContent='正在查询 '+ip+'…';q('#ixResults').innerHTML='';q('#ixCopy').disabled=true;let d,err;for(let p of ['/tools/ip-lookup','/network/ip','/ip/lookup'])try{d=await req(p,'POST',{ip});break}catch(x){err=x}if(!d){q('#ixStatus').textContent='等待后端对接：'+(err?.message||'接口不存在');copyText='IP：'+ip+'\n状态：等待后端对接';return}let x=d.data||d,fields=[['IP',x.ip||ip],['归属地',x.location||x.country||x.region],['ASN',x.asn],['运营商',x.isp||x.org||x.provider],['封禁状态',x.banned??x.blocked],['被墙/连通性',x.gfw_status??x.reachable??x.block_status]];q('#ixResults').innerHTML=fields.map(([k,v])=>'<article class="glass panel"><div class="label">'+k+'</div><b>'+esc(typeof v==='object'?JSON.stringify(v):v)+'</b></article>').join('');q('#ixStatus').textContent='查询完成（服务端结果）';copyText=fields.map(([k,v])=>k+'：'+(v??'未提供')).join('\n');q('#ixCopy').disabled=false}
 all('.nav').forEach(n=>n.addEventListener('click',()=>{if(n.dataset.page==='accounts')loadProducts().catch(e=>say(e.message));if(n.dataset.page==='growth')loadGrowth();if(n.dataset.page==='network')q('#ixStatus').textContent='等待输入 IP'}));q('#axRefresh').onclick=loadProducts;q('#axSearch').oninput=paintProducts;q('#axStatusFilter').onchange=paintProducts;q('#gxRefresh').onclick=loadGrowth;q('#gxBotRefresh').onclick=loadGrowth;q('#gxRates').onsubmit=async e=>{e.preventDefault();let d={level1:Number(e.currentTarget.elements.level1.value),level2:Number(e.currentTarget.elements.level2.value)};if(d.level1+d.level2>100)return say('分佣比例总和不能超过 100%');try{await req('/settings/referral-rates','POST',d);log('修改分佣比例','一级/二级','成功');say('分佣比例已保存')}catch(x){log('修改分佣比例','一级/二级','待对接');say('等待后端对接：'+x.message)}};q('#ixForm').onsubmit=lookupIp;q('#ixCopy').onclick=async()=>{try{await navigator.clipboard.writeText(copyText);say('诊断结果已复制')}catch{let t=document.createElement('textarea');t.value=copyText;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();say('诊断结果已复制')}};function adj(raw,v){raw=String(raw||'').trim();if(/^[-+][0-9]+(?:\\.[0-9]+)?%$/.test(raw))return Math.max(0,Math.round(v*(1+Number(raw.slice(0,-1))/100)*100)/100);if(/^[-+][0-9]+(?:\\.[0-9]+)?$/.test(raw))return Math.max(0,Math.round((v+Number(raw))*100)/100);throw Error('格式示例 +10%、-5%、+20')}$('#axApplyAdjust').onclick=async()=>{if(!products.length)return say('请先加载商品');let raw=$('#axGlobalAdjust').value;if(!confirm('确认对全部账号商品批量调价：'+raw+'？'))return;try{for(const p of products)await req('/cloned_products/update','POST',{id:p.id,price:adj(raw,Number(p.price||0))});say('调价请求已提交');loadProducts()}catch(e){say('调价中断：'+e.message)}};$('#applyGlobalPrice').onclick=async()=>{if(!plans.length)return toast('请先加载套餐',true);let raw=$('#globalPriceAdjust').value;if(!confirm('确认对全部套餐调价：'+raw+'？'))return;try{for(const p of plans){let body={id:p.id};['month_price','quarter_price','half_year_price','year_price'].forEach(k=>{if(p[k]!=null)body[k]=Math.round(adj(raw,Number(p[k])/100)*100)});await req('/plans/update','POST',body)}toast('调价请求已提交');loadPlans()}catch(e){toast('调价中断：'+e.message,true)}};$('#gxBroadcastAll').onclick=async()=>{let title=$('#gxBroadcastTitle').value.trim(),message=$('#gxBroadcastBody').value.trim();if(!title||!message)return say('请填写标题和内容');if(!confirm('确认向所有机器人用户广播？此操作可能无法撤回。'))return;let err;for(const path of ['/bots/broadcast','/broadcast'])try{await req(path,'POST',{title,message,scope:'all_bots'});say('广播请求已被服务端接受');return}catch(e){err=e}say('广播接口未接通：'+(err?.message||''))};$('#gxDeepGenerate').onclick=async()=>{let bot=$('#gxDeepBot').value,id=$('#gxDeepShort').value.trim();if(!id)return say('请输入 short_id');try{let d=await req('/bots/deep-link','POST',{bot,short_id:id});$('#gxDeepResult').value=d.data?.url||d.url||d.data?.deep_link||'';if(!$('#gxDeepResult').value)throw Error('接口未返回链接')}catch(e){say('深度链接接口未接通：'+e.message)}};$('#gxDeepCopy').onclick=async()=>{let v=$('#gxDeepResult').value;if(!v)return say('请先生成链接');try{await navigator.clipboard.writeText(v);say('链接已复制')}catch{say('请长按输入框复制')}};q('#worldMapRefresh').onclick=loadWorld;window.addEventListener('load',()=>setTimeout(()=>{if(q('#page-dashboard')&&!q('#page-dashboard').classList.contains('hidden'))loadWorld()},600));window.addEventListener('resize',()=>chart&&chart.resize());
 })();
-</script></body></html>
+</script>
+<style id="admin-cinematic-upgrade">
+#admin-cinematic-bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3;opacity:.3;pointer-events:none;background:#06101f}
+body:before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:linear-gradient(180deg,rgba(3,10,25,.82),rgba(4,15,32,.92)),radial-gradient(ellipse at 75% 0%,rgba(30,95,165,.22),transparent 55%)}
+body{isolation:isolate}
+.glass,.modal,.sidebar,.topbar{backdrop-filter:blur(16px)}
+.bot-matrix{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.bot-matrix>*{position:relative;overflow:hidden;border:1px solid rgba(80,228,255,.22);border-radius:16px;background:linear-gradient(145deg,rgba(13,39,67,.88),rgba(5,19,37,.9));box-shadow:inset 0 1px rgba(255,255,255,.05),0 10px 30px rgba(0,0,0,.16)}
+.bot-matrix>*:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:linear-gradient(#50e4ff,#5594ff)}
+.bot-matrix .bot-avatar{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#153e65,#10243e);font-size:23px;border:1px solid #50e4ff44}
+.preview-card{border:1px solid rgba(80,228,255,.3);background:radial-gradient(ellipse at 80% 0%,rgba(50,130,255,.16),transparent 60%),linear-gradient(145deg,rgba(13,36,62,.96),rgba(5,16,32,.98));box-shadow:0 0 30px rgba(44,170,255,.12),inset 0 0 0 1px rgba(255,255,255,.025)}
+.preview-price{font-size:28px;font-weight:900;color:#50e4ff;text-shadow:0 0 18px rgba(80,228,255,.35)}
+@media(max-width:650px){#admin-cinematic-bg{opacity:.2}body:before{background:linear-gradient(180deg,rgba(3,10,25,.88),rgba(4,15,32,.95))}}
+@media(prefers-reduced-motion:reduce){#admin-cinematic-bg{display:none}}
+</style>
+<script id="admin-cinematic-upgrade-js">
+(()=> {
+  if(!document.body || document.getElementById('admin-cinematic-bg')) return;
+  const v=document.createElement('video');
+  v.id='admin-cinematic-bg';v.autoplay=true;v.muted=true;v.defaultMuted=true;v.loop=true;v.playsInline=true;v.preload='metadata';
+  v.setAttribute('aria-hidden','true');v.setAttribute('webkit-playsinline','');
+  v.src='https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4';
+  v.addEventListener('error',()=>v.style.display='none',{once:true});
+  document.body.prepend(v);
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const saveData=navigator.connection&&navigator.connection.saveData;
+  if(reduced||saveData){v.pause();v.style.display='none';return;}
+  const play=()=>v.play().catch(()=>{v.style.display='none';});
+  if(document.visibilityState==='visible')play();
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!reduced&&!saveData)play();else v.pause();});
+  const botRoot=document.getElementById('gxBotCards');
+  if(botRoot){
+    const decorate=()=>{
+      botRoot.querySelectorAll(':scope > *').forEach(card=>{
+        if(card.dataset.visualDecorated)return;
+        card.dataset.visualDecorated='1';
+        const text=(card.textContent||'').toLowerCase();
+        const brand=text.includes('safew')?'SafeW':text.includes('mivra')?'Mivra':text.includes('晴天')||text.includes('qingtian')?'晴天':'机器人';
+        const emoji=brand==='SafeW'?'◈':brand==='Mivra'?'✦':brand==='晴天'?'☀':'◎';
+        const avatar=document.createElement('span');avatar.className='bot-avatar';avatar.textContent=emoji;avatar.setAttribute('aria-hidden','true');
+        const head=document.createElement('div');head.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:12px';
+        card.prepend(head);head.appendChild(avatar);
+        const title=card.querySelector('h3,b,strong');
+        if(title)head.appendChild(title);
+      });
+    };
+    decorate();
+    new MutationObserver(decorate).observe(botRoot,{childList:true,subtree:true});
+  }
+})();
+</script>
+
+</body></html>
