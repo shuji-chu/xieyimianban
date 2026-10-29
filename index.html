@@ -236,5 +236,45 @@ let toastTimer;function toast(msg){const t=$('#toast');t.textContent=msg;t.class
 // Lightweight animated blue-white particle network; no external dependencies.
 (()=>{const canvas=$('#particles'),ctx=canvas.getContext('2d');let w,h,pts=[],raf;function resize(){w=canvas.width=innerWidth*devicePixelRatio;h=canvas.height=innerHeight*devicePixelRatio;canvas.style.width=innerWidth+'px';canvas.style.height=innerHeight+'px';ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);pts=Array.from({length:Math.min(72,Math.floor(innerWidth/16))},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-.5)*.24,vy:(Math.random()-.5)*.24,r:Math.random()*1.7+.5}))}function draw(){ctx.clearRect(0,0,innerWidth,innerHeight);for(let i=0;i<pts.length;i++){const p=pts[i];p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>innerWidth)p.vx*=-1;if(p.y<0||p.y>innerHeight)p.vy*=-1;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(56,139,232,.42)';ctx.fill();for(let j=i+1;j<pts.length;j++){const q=pts[j],dx=p.x-q.x,dy=p.y-q.y,d=Math.hypot(dx,dy);if(d<118){ctx.strokeStyle='rgba(67,151,236,'+(1-d/118)*.16+')';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke()}}}raf=requestAnimationFrame(draw)}addEventListener('resize',resize);resize();if(!matchMedia('(prefers-reduced-motion: reduce)').matches)draw();else{ctx.clearRect(0,0,innerWidth,innerHeight)}})();
 </script>
+<script>
+/* 中文商业界面文案校正：保留品牌名、协议标识、邮箱与商品原始名称 */
+(function(){
+ const dict={
+ "GLOBAL DIGITAL SERVICE PLATFORM":"全球数字服务枢纽","SOCKS5 · SERVICE NOTICE":"服务公告",
+ "DAILY REWARD / BLIND BOX":"每日福利 / 惊喜盲盒","REFERRAL / COMMUNITY":"推广与社群",
+ "LIVE SERVICE CATALOG":"实时服务目录","AVAILABLE PLANS":"可选服务套餐",
+ "Sign In":"登录","Sign in":"登录","Register":"注册","Login":"登录","Logout":"退出登录",
+ "All Products":"全部商品","Shopping Cart":"购物车","Your cart is empty":"购物车还是空的",
+ "Browse Products":"浏览商品","Checkout":"确认订单","Order Summary":"订单摘要",
+ "Payment Method":"支付方式","Wallet Balance":"钱包余额","Available Balance":"可用余额",
+ "Place Order":"提交订单","My Orders":"我的订单","User Dashboard":"用户中心",
+ "Member Since":"注册时间","Wallet":"钱包","Query":"查询","Nodes":"节点中心",
+ "Order / Node Query":"订单 / 节点查询","Credential":"查询凭证","Query Now":"立即查询",
+ "Loading...":"正在加载…","Back Home":"返回首页","Remove":"移除","Total":"合计",
+ "Proceed to Checkout":"前往结算","Email":"邮箱","Password":"密码",
+ "Please sign in to view your cart.":"请先登录后查看购物车。",
+ "Instant delivery of global digital accounts & proxy nodes.":"全球数字商品与网络服务，交付状态清晰可查。",
+ "DAILY REWARD / BLIND BOX":"每日福利 / 惊喜盲盒",
+ "System Settings":"系统设置","Settings":"设置","Overview":"总览",
+ "Dashboard":"控制台","User Management":"用户管理","Product Management":"商品管理",
+ "Order Management":"订单管理","Node Management":"节点管理","Bot Management":"机器人管理",
+ "Sign out":"退出登录","Search":"搜索","Refresh":"刷新","Save":"保存","Cancel":"取消",
+ "Create":"创建","Delete":"删除","Edit":"编辑","Status":"状态","Actions":"操作",
+ "Total Users":"用户总数","Total Orders":"订单总数","Revenue":"营收",
+ "UI Preview 0.1":"界面预览版 0.1","API Connection":"接口连接",
+ "SERVICE NOTICE":"服务公告","LIVE":"运行状态","PREVIEW":"预览"
+ };
+ const translate=root=>{
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);const nodes=[];
+  while(walker.nextNode())nodes.push(walker.currentNode);
+  nodes.forEach(n=>{const s=n.nodeValue.trim();if(dict[s])n.nodeValue=n.nodeValue.replace(s,dict[s]);});
+  root.querySelectorAll("input[placeholder],textarea[placeholder]").forEach(el=>{if(dict[el.placeholder])el.placeholder=dict[el.placeholder]});
+  root.querySelectorAll("[aria-label],[title]").forEach(el=>["aria-label","title"].forEach(a=>{const v=el.getAttribute(a);if(dict[v])el.setAttribute(a,dict[v])}));
+ };
+ const run=()=>translate(document.body);
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",run,{once:true});else run();
+ new MutationObserver(()=>translate(document.body)).observe(document.documentElement,{subtree:true,childList:true,characterData:true});
+})();
+</script>
 </body>
 </html>
