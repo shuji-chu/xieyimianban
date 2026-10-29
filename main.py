@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request, UploadFile, File
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import uuid
@@ -34,6 +34,7 @@ S3_SECRET_ACCESS_KEY = os.getenv("S3_SECRET_ACCESS_KEY", "").strip()
 MEDIA_PUBLIC_BASE_URL = os.getenv("MEDIA_PUBLIC_BASE_URL", "").strip().rstrip("/")
 HOME_BANNERS_OBJECT_KEY = os.getenv("HOME_BANNERS_OBJECT_KEY", "site-config/home-banners.json").strip()
 ADMIN_AUTH_VERIFY_URL = os.getenv("ADMIN_AUTH_VERIFY_URL", "").strip()
+USER_API_BASE = os.getenv("USER_API_BASE", "https://web.lynli.me/api/v1").strip().rstrip("/")
 
 @app.on_event("startup")
 def startup():
@@ -77,6 +78,40 @@ def create_node(user: UserCreate, request: Request):
             raise HTTPException(status_code=502, detail="Node API rejected the request")
     
     return {"status": "pending"}
+
+@app.get("/api/v1/user/orders")
+async def proxy_user_orders(request: Request, page: int = Query(1, ge=1), page_size: int = Query(50, ge=1, le=100)):
+    # The upstream must scope results to the identity represented by this Bearer token.
+    header = request.headers.get("authorization", "")
+    token = header[7:].strip() if header.lower().startswith("bearer ") else ""
+    if len(token) < 8:
+        raise HTTPException(status_code=401, detail="Login required")
+    parsed = urlparse(USER_API_BASE)
+    if parsed.scheme != "https" or not parsed.netloc:
+        raise HTTPException(status_code=503, detail="USER_API_BASE must be an HTTPS API base")
+    async with httpx.AsyncClient(timeout=12, follow_redirects=False) as client:
+        last_status = 404
+        for path in ("/user/order/fetch", "/user/order/list", "/user/orders"):
+            try:
+                response = await client.get(
+                    USER_API_BASE + path,
+                    headers={"Authorization": "Bearer " + token, "Accept": "application/json"},
+                    params={"page": page, "page_size": page_size, "limit": page_size},
+                )
+            except httpx.HTTPError:
+                raise HTTPException(status_code=502, detail="Order service unavailable")
+            if response.status_code in (401, 403):
+                raise HTTPException(status_code=401, detail="Login expired or unauthorized")
+            if response.status_code in (404, 405):
+                last_status = response.status_code
+                continue
+            if not response.is_success:
+                raise HTTPException(status_code=502, detail="Order service returned HTTP " + str(response.status_code))
+            try:
+                return response.json()
+            except ValueError:
+                raise HTTPException(status_code=502, detail="Order service returned invalid JSON")
+    raise HTTPException(status_code=502, detail="Upstream order history endpoint is not available (last HTTP " + str(last_status) + ")")
 
 def object_store():
     if not all((S3_ENDPOINT_URL, S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, MEDIA_PUBLIC_BASE_URL)):
