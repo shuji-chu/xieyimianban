@@ -192,11 +192,12 @@ async def admin_upload_media(request: Request, file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Invalid or unsupported image")
     key = "banners/" + uuid.uuid4().hex + ".webp"
     client = object_store()
+    encoded = output.getvalue()
     try:
-        client.put_object(Bucket=S3_BUCKET, Key=key, Body=output.getvalue(), ContentType="image/webp", CacheControl="public, max-age=31536000, immutable")
+        client.put_object(Bucket=S3_BUCKET, Key=key, Body=encoded, ContentType="image/webp", CacheControl="public, max-age=31536000, immutable")
     except (BotoCoreError, ClientError):
         raise HTTPException(status_code=502, detail="Image upload to object storage failed")
-    return {"success": True, "data": {"url": MEDIA_PUBLIC_BASE_URL + "/" + key, "key": key, "content_type": "image/webp", "size": output.tell()}}
+    return {"success": True, "data": {"url": MEDIA_PUBLIC_BASE_URL + "/" + key, "key": key, "content_type": "image/webp", "size": len(encoded)}}
 
 
 if __name__ == "__main__":
