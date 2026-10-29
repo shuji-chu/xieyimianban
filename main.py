@@ -21,6 +21,15 @@ app = FastAPI(title="xieyimianban 面板后端")
 CORS_ORIGINS = [x.strip() for x in os.getenv("CORS_ORIGINS", "https://shuji-chu.github.io").split(",") if x.strip()]
 app.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS, allow_credentials=False, allow_methods=["GET", "POST", "PUT", "OPTIONS"], allow_headers=["Authorization", "Content-Type", "Accept"])
 
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    return response
+
 # Server configuration is supplied through deployment environment variables.
 NODE_IP = os.getenv("NODE_IP", "").strip()
 XRAY_API_PORT = os.getenv("XRAY_API_PORT", "10085").strip()
