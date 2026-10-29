@@ -235,6 +235,97 @@ async def admin_save_home_banners(payload: BannerConfig, request: Request):
         raise HTTPException(status_code=502, detail="Unable to save banner configuration")
     return {"success": True, "count": len(clean), "data": clean}
 
+TELEGRAM_BOTS_OBJECT_KEY = os.getenv("TELEGRAM_BOTS_OBJECT_KEY", "site-config/telegram-bots.json")
+
+def telegram_bots_key():
+    if not re.fullmatch(r"[A-Za-z0-9_./-]{1,180}", TELEGRAM_BOTS_OBJECT_KEY) or ".." in TELEGRAM_BOTS_OBJECT_KEY.split("/"):
+        raise HTTPException(status_code=500, detail="Invalid Telegram bot configuration key")
+    return TELEGRAM_BOTS_OBJECT_KEY
+
+def read_telegram_bots():
+    client = object_store()
+    try:
+        response = client.get_object(Bucket=S3_BUCKET, Key=telegram_bots_key())
+        payload = json.loads(response["Body"].read(128 * 1024 + 1).decode("utf-8"))
+    except ClientError as exc:
+        code = str(exc.response.get("Error", {}).get("Code", ""))
+        if code in {"NoSuchKey", "404", "NotFound"}:
+            return []
+        raise HTTPException(status_code=502, detail="Unable to read Telegram bot configuration")
+    except (BotoCoreError, UnicodeDecodeError, json.JSONDecodeError):
+        raise HTTPException(status_code=502, detail="Telegram bot configuration storage error")
+    if not isinstance(payload, list):
+        raise HTTPException(status_code=502, detail="Stored Telegram bot configuration is invalid")
+    return payload[:20]
+
+@app.get("/api/v1/public/telegram-bots")
+async def public_telegram_bots():
+    bots = []
+    for row in read_telegram_bots():
+        if not isinstance(row, dict) or row.get("enabled") is not True:
+            continue
+        username = str(row.get("username") or "").strip().lstrip("@")
+        if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{4,31}", username):
+            continue
+        bots.append({
+            "id": str(row.get("id") or "")[:40],
+            "name": str(row.get("name") or "Telegram 机器人")[:48],
+            "username": username,
+            "subtitle": str(row.get("subtitle") or "")[:100],
+            "description": str(row.get("description") or "")[:500],
+            "button": str(row.get("button") or "打开 Telegram")[:40],
+            "sort": int(row.get("sort") or 0),
+            "enabled": True,
+        })
+    bots.sort(key=lambda item: item["sort"])
+    return JSONResponse(content={"success": True, "data": bots}, headers={"Cache-Control": "no-store, max-age=0", "X-Content-Type-Options": "nosniff"})
+
+@app.get("/api/v1/admin/telegram-bots")
+async def admin_get_telegram_bots(request: Request):
+    await require_admin(request)
+    return {"success": True, "data": read_telegram_bots()}
+
+class TelegramBotConfig(BaseModel):
+    bots: list[dict] = Field(max_length=20)
+
+@app.put("/api/v1/admin/telegram-bots")
+async def admin_save_telegram_bots(payload: TelegramBotConfig, request: Request):
+    await require_admin(request)
+    clean = []
+    seen = set()
+    for row in payload.bots:
+        if not isinstance(row, dict):
+            raise HTTPException(status_code=400, detail="Each bot must be an object")
+        bot_id = str(row.get("id") or "").strip().lower()
+        if not re.fullmatch(r"[a-z0-9_-]{1,40}", bot_id) or bot_id in seen:
+            raise HTTPException(status_code=400, detail="Telegram bot IDs must be unique valid identifiers")
+        seen.add(bot_id)
+        username = str(row.get("username") or "").strip().lstrip("@")
+        if username and not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{4,31}", username):
+            raise HTTPException(status_code=400, detail="Telegram username format is invalid")
+        try:
+            sort_order = int(row.get("sort") or 0)
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail="Bot sort must be an integer")
+        clean.append({
+            "id": bot_id,
+            "name": str(row.get("name") or bot_id)[:48],
+            "username": username,
+            "subtitle": str(row.get("subtitle") or "")[:100],
+            "description": str(row.get("description") or "")[:500],
+            "button": str(row.get("button") or "打开 Telegram")[:40],
+            "sort": max(0, min(100000, sort_order)),
+            "enabled": row.get("enabled") is True,
+        })
+    clean.sort(key=lambda item: item["sort"])
+    raw = json.dumps(clean, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    client = object_store()
+    try:
+        client.put_object(Bucket=S3_BUCKET, Key=telegram_bots_key(), Body=raw, ContentType="application/json; charset=utf-8", CacheControl="no-store")
+    except (BotoCoreError, ClientError):
+        raise HTTPException(status_code=502, detail="Unable to save Telegram bot configuration")
+    return {"success": True, "count": len(clean), "data": clean}
+
 @app.post("/api/v1/admin/media/upload")
 async def admin_upload_media(request: Request, file: UploadFile = File(...)):
     await require_admin(request)
