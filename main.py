@@ -326,6 +326,86 @@ async def admin_save_telegram_bots(payload: TelegramBotConfig, request: Request)
         raise HTTPException(status_code=502, detail="Unable to save Telegram bot configuration")
     return {"success": True, "count": len(clean), "data": clean}
 
+ACCOUNT_CARD_OVERRIDES_OBJECT_KEY = os.getenv("ACCOUNT_CARD_OVERRIDES_OBJECT_KEY", "site-config/account-card-overrides.json")
+
+def account_card_overrides_key():
+    if not re.fullmatch(r"[A-Za-z0-9_./-]{1,180}", ACCOUNT_CARD_OVERRIDES_OBJECT_KEY) or ".." in ACCOUNT_CARD_OVERRIDES_OBJECT_KEY.split("/"):
+        raise HTTPException(status_code=500, detail="Invalid account card override key")
+    return ACCOUNT_CARD_OVERRIDES_OBJECT_KEY
+
+def read_account_card_overrides():
+    client = object_store()
+    try:
+        response = client.get_object(Bucket=S3_BUCKET, Key=account_card_overrides_key())
+        payload = json.loads(response["Body"].read(1024 * 1024 + 1).decode("utf-8"))
+    except ClientError as exc:
+        code = str(exc.response.get("Error", {}).get("Code", ""))
+        if code in {"NoSuchKey", "404", "NotFound"}:
+            return []
+        raise HTTPException(status_code=502, detail="Unable to read account card configuration")
+    except (BotoCoreError, UnicodeDecodeError, json.JSONDecodeError):
+        raise HTTPException(status_code=502, detail="Account card configuration storage error")
+    if not isinstance(payload, list):
+        raise HTTPException(status_code=502, detail="Stored account card configuration is invalid")
+    return payload[:500]
+
+def clean_account_card_overrides(rows):
+    clean = []
+    seen = set()
+    allowed_categories = {"Facebook", "Instagram", "TikTok", "X / Twitter", "Telegram", "Google / Gmail", "WhatsApp", "Discord", "YouTube", "Reddit", "其他账号", "海外账号资源"}
+    for row in rows:
+        if not isinstance(row, dict):
+            raise HTTPException(status_code=400, detail="Each account card override must be an object")
+        product_id = str(row.get("id") or "").strip()[:100]
+        if not product_id or product_id in seen:
+            raise HTTPException(status_code=400, detail="Account card IDs must be unique and non-empty")
+        seen.add(product_id)
+        category = str(row.get("account_category") or "海外账号资源").strip()
+        if category not in allowed_categories:
+            category = "其他账号"
+        image_url = str(row.get("image_url") or "").strip()
+        if image_url:
+            parsed = urlparse(image_url)
+            if parsed.scheme != "https" or not parsed.netloc or any(ch in image_url for ch in '\r\n"<>'):
+                raise HTTPException(status_code=400, detail="Account card image must be a valid HTTPS URL")
+            image_url = image_url[:2048]
+        clean.append({
+            "id": product_id,
+            "category": "账号服务",
+            "product_type": "account",
+            "account_category": category,
+            "platform": category,
+            "image_url": image_url,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        })
+    return clean
+
+@app.get("/api/v1/public/catalog/account-overrides")
+async def public_account_card_overrides():
+    return JSONResponse(content={"success": True, "data": clean_account_card_overrides(read_account_card_overrides())}, headers={"Cache-Control": "no-store, max-age=0", "X-Content-Type-Options": "nosniff"})
+
+@app.get("/api/v1/admin/catalog/account-overrides")
+async def admin_get_account_card_overrides(request: Request):
+    await require_admin(request)
+    return {"success": True, "data": clean_account_card_overrides(read_account_card_overrides())}
+
+class AccountCardOverrides(BaseModel):
+    overrides: list[dict] = Field(max_length=500)
+
+@app.put("/api/v1/admin/catalog/account-overrides")
+async def admin_save_account_card_overrides(payload: AccountCardOverrides, request: Request):
+    await require_admin(request)
+    clean = clean_account_card_overrides(payload.overrides)
+    raw = json.dumps(clean, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    if len(raw) > 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Account card configuration is too large")
+    client = object_store()
+    try:
+        client.put_object(Bucket=S3_BUCKET, Key=account_card_overrides_key(), Body=raw, ContentType="application/json; charset=utf-8", CacheControl="no-store")
+    except (BotoCoreError, ClientError):
+        raise HTTPException(status_code=502, detail="Unable to save account card configuration")
+    return {"success": True, "count": len(clean), "data": clean}
+
 @app.post("/api/v1/admin/media/upload")
 async def admin_upload_media(request: Request, file: UploadFile = File(...)):
     await require_admin(request)
