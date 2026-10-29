@@ -53,7 +53,7 @@ def create_node(user: UserCreate, request: Request):
         raise HTTPException(status_code=401, detail="Authentication required")
     if not NODE_IP or not re.fullmatch(r"[A-Za-z0-9.:-]+", NODE_IP):
         raise HTTPException(status_code=503, detail="Node API is not configured")
-    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", user.email or "") or len(user.email) > 254:
+    if not re.fullmatch(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,63}", user.email or "") or len(user.email) > 254:
         raise HTTPException(status_code=400, detail="Invalid email address")
     if user.protocol not in {"vless", "vmess", "trojan", "shadowsocks"}:
         raise HTTPException(status_code=400, detail="Unsupported protocol")
