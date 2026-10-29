@@ -276,5 +276,27 @@ let toastTimer;function toast(msg){const t=$('#toast');t.textContent=msg;t.class
  new MutationObserver(()=>translate(document.body)).observe(document.documentElement,{subtree:true,childList:true,characterData:true});
 })();
 </script>
+<style id="mobile-layout-guard">
+html,body{max-width:100%;overflow-x:hidden}
+img,svg,canvas,video{max-width:100%}
+@media(max-width:900px){
+.hero{grid-template-columns:minmax(0,1fr)!important}
+.preview-wrap{min-width:0;max-width:100%}
+}
+@media(max-width:700px){
+.app{width:100%;max-width:100%;padding-left:14px;padding-right:14px;box-sizing:border-box}
+.topbar{max-width:100%;gap:10px;flex-wrap:wrap}
+.nav{max-width:100%;overflow-x:auto}
+.hero{padding-left:0;padding-right:0}
+.stats-grid,.stat-grid,.metric-grid,.cards-grid,.dashboard-grid{grid-template-columns:minmax(0,1fr)!important}
+.card,.panel,.stat-card,.metric-card{min-width:0;max-width:100%;box-sizing:border-box}
+.page-header,.section-header,.panel-header{align-items:flex-start;flex-wrap:wrap;gap:12px}
+.table-wrap,.table-container{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{min-width:600px}
+input,select,textarea{min-width:0;max-width:100%;box-sizing:border-box}
+button,.btn{max-width:100%;white-space:normal;line-height:1.4}
+}
+@media(max-width:380px){.app{padding-left:10px;padding-right:10px}}
+</style>
 </body>
 </html>
