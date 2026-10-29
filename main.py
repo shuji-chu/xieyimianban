@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import uuid
 import subprocess
@@ -16,6 +17,8 @@ from botocore.exceptions import BotoCoreError, ClientError
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 app = FastAPI(title="xieyimianban 面板后端")
+CORS_ORIGINS = [x.strip() for x in os.getenv("CORS_ORIGINS", "https://shuji-chu.github.io").split(",") if x.strip()]
+app.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS, allow_credentials=False, allow_methods=["GET", "POST", "PUT", "OPTIONS"], allow_headers=["Authorization", "Content-Type", "Accept"])
 
 # ⚠️ 记得这里改成你节点机的真实 IP
 NODE_IP = "1.2.3.4" 
@@ -68,8 +71,11 @@ def object_store():
     if not all((S3_ENDPOINT_URL, S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, MEDIA_PUBLIC_BASE_URL)):
         raise HTTPException(status_code=503, detail="Object storage is not configured")
     parsed = urlparse(S3_ENDPOINT_URL)
+    media_url = urlparse(MEDIA_PUBLIC_BASE_URL)
     if parsed.scheme != "https" or not parsed.netloc:
         raise HTTPException(status_code=503, detail="S3_ENDPOINT_URL must be a valid HTTPS endpoint")
+    if media_url.scheme != "https" or not media_url.netloc:
+        raise HTTPException(status_code=503, detail="MEDIA_PUBLIC_BASE_URL must be a valid HTTPS URL")
     return boto3.client(
         "s3", endpoint_url=S3_ENDPOINT_URL, region_name=S3_REGION,
         aws_access_key_id=S3_ACCESS_KEY_ID, aws_secret_access_key=S3_SECRET_ACCESS_KEY,
@@ -147,11 +153,15 @@ async def admin_save_home_banners(payload: BannerConfig, request: Request):
             raise HTTPException(status_code=400, detail="Banner link is invalid")
         if parsed_link.scheme and parsed_link.scheme not in {"http", "https"}:
             raise HTTPException(status_code=400, detail="Only HTTP(S) or relative banner links are allowed")
+        try:
+            sort_order = int(row.get("sort") or 0)
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail="Banner sort must be an integer")
         clean.append({
             "id": str(row.get("id") or uuid.uuid4().hex)[:100],
             "title": title, "subtitle": subtitle, "image": image, "link": link,
             "button": str(row.get("button") or "立即查看")[:24],
-            "sort": max(0, min(100000, int(row.get("sort") or 0))),
+            "sort": max(0, min(100000, sort_order)),
             "enabled": row.get("enabled") is True,
             "theme": "light" if row.get("theme") == "light" else "dark",
             "newtab": row.get("newtab") is True,
