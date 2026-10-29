@@ -20,9 +20,20 @@ app = FastAPI(title="xieyimianban 面板后端")
 CORS_ORIGINS = [x.strip() for x in os.getenv("CORS_ORIGINS", "https://shuji-chu.github.io").split(",") if x.strip()]
 app.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS, allow_credentials=False, allow_methods=["GET", "POST", "PUT", "OPTIONS"], allow_headers=["Authorization", "Content-Type", "Accept"])
 
-# ⚠️ 记得这里改成你节点机的真实 IP
-NODE_IP = "1.2.3.4" 
-XRAY_API_PORT = "10085"
+# Server configuration is supplied through deployment environment variables.
+NODE_IP = os.getenv("NODE_IP", "").strip()
+XRAY_API_PORT = os.getenv("XRAY_API_PORT", "10085").strip()
+NODE_API_TOKEN = os.getenv("NODE_API_TOKEN", "").strip()
+
+# S3-compatible object storage (Alibaba OSS S3 endpoint or Cloudflare R2).
+S3_ENDPOINT_URL = os.getenv("S3_ENDPOINT_URL", "").strip()
+S3_REGION = os.getenv("S3_REGION", "us-east-1").strip()
+S3_BUCKET = os.getenv("S3_BUCKET", "").strip()
+S3_ACCESS_KEY_ID = os.getenv("S3_ACCESS_KEY_ID", "").strip()
+S3_SECRET_ACCESS_KEY = os.getenv("S3_SECRET_ACCESS_KEY", "").strip()
+MEDIA_PUBLIC_BASE_URL = os.getenv("MEDIA_PUBLIC_BASE_URL", "").strip().rstrip("/")
+HOME_BANNERS_OBJECT_KEY = os.getenv("HOME_BANNERS_OBJECT_KEY", "site-config/home-banners.json").strip()
+ADMIN_AUTH_VERIFY_URL = os.getenv("ADMIN_AUTH_VERIFY_URL", "").strip()
 
 @app.on_event("startup")
 def startup():
@@ -41,7 +52,7 @@ def create_node(user: UserCreate, request: Request):
         raise HTTPException(status_code=401, detail="Authentication required")
     if not NODE_IP or not re.fullmatch(r"[A-Za-z0-9.:-]+", NODE_IP):
         raise HTTPException(status_code=503, detail="Node API is not configured")
-    if not re.fullmatch(r"[^@\\s]+@[^@\\s]+\\.[^@\\s]+", user.email or "") or len(user.email) > 254:
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", user.email or "") or len(user.email) > 254:
         raise HTTPException(status_code=400, detail="Invalid email address")
     if user.protocol not in {"vless", "vmess", "trojan", "shadowsocks"}:
         raise HTTPException(status_code=400, detail="Unsupported protocol")
