@@ -9,8 +9,8 @@ Copy the names from .env.example into the deployment environment and replace eve
 1. Create a dedicated bucket in Alibaba OSS or another S3-compatible service. Create a dedicated access key with the minimum object read/write permissions required.
 2. Configure S3_ENDPOINT_URL, S3_REGION, S3_BUCKET, S3_ACCESS_KEY_ID, and S3_SECRET_ACCESS_KEY in the container runtime.
 3. Bind the public media hostname to the bucket/custom-domain origin and set MEDIA_PUBLIC_BASE_URL to the HTTPS hostname. Public read access should apply only to intended image objects, not credentials or administrative JSON.
-4. Route /api/v1/admin/media/upload, /api/v1/admin/home-banners, and /api/v1/public/home-banners to this FastAPI service. The static admin currently uses https://api.lynli.me/api/v1/admin by default; if this service uses a different hostname, set window.SOSKS5_MEDIA_API_BASE before the admin module runs to the full admin API base ending in /api/v1/admin.
-5. Set ADMIN_AUTH_VERIFY_URL to an authenticated admin-only endpoint on your existing identity/API service. Verify a valid admin token succeeds and a normal user token fails.
+4. Route /api/v1/admin/media/upload, /api/v1/admin/home-banners, /api/v1/public/home-banners, and /api/v1/user/orders to this FastAPI service. The static admin currently uses https://api.lynli.me/api/v1/admin by default; if this service uses a different hostname, set window.SOSKS5_MEDIA_API_BASE before the admin module runs to the full admin API base ending in /api/v1/admin.
+5. Set ADMIN_AUTH_VERIFY_URL to an authenticated admin-only endpoint on your existing identity/API service. Set USER_API_BASE to the upstream user API base; the order proxy forwards the user Bearer token and does not accept a user_id parameter. Verify a valid admin token succeeds and a normal user token fails.
 6. Upload a test image, verify the returned HTTPS URL opens through Cloudflare, publish a banner, then check the public JSON endpoint and homepage from a separate browser/device.
 
 The backend re-encodes accepted JPEG/PNG/WebP/GIF input as WebP, limits input to 8 MB and 24 million pixels, assigns random object keys, and never returns storage credentials. Banner JSON is written to the configured object store key and served through the public API endpoint, not as a public JSON object.
@@ -25,4 +25,4 @@ The backend re-encodes accepted JPEG/PNG/WebP/GIF input as WebP, limits input to
 - Monitor API errors and storage usage; set object-storage lifecycle/size budgets and alert on unusual upload bursts.
 
 ## Important deployment note
-Committing code does not configure the hosting platform, bucket permissions, Cloudflare DNS, reverse-proxy routes, or runtime secrets. The APIs remain disabled until the required environment variables and reverse proxy routes are configured and verified.
+Committing code does not configure the hosting platform, bucket permissions, Cloudflare DNS, reverse-proxy routes, or runtime secrets. The OSS/admin APIs remain disabled until the required environment variables and reverse proxy routes are configured and verified. The order proxy returns an error unless an upstream order-list route is actually available; it never fabricates orders.
