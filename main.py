@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 import uuid
 import subprocess
@@ -108,7 +109,8 @@ async def proxy_user_orders(request: Request, page: int = Query(1, ge=1), page_s
             if not response.is_success:
                 raise HTTPException(status_code=502, detail="Order service returned HTTP " + str(response.status_code))
             try:
-                return response.json()
+                body = response.json()
+                return JSONResponse(content=body, headers={"Cache-Control": "private, no-store, max-age=0", "Vary": "Authorization", "X-Content-Type-Options": "nosniff"})
             except ValueError:
                 raise HTTPException(status_code=502, detail="Order service returned invalid JSON")
     raise HTTPException(status_code=502, detail="Upstream order history endpoint is not available (last HTTP " + str(last_status) + ")")
@@ -168,7 +170,7 @@ def read_banners():
 
 @app.get("/api/v1/public/home-banners")
 async def public_home_banners():
-    return {"success": True, "data": [b for b in read_banners() if isinstance(b, dict) and b.get("enabled") is True]}
+    return JSONResponse(content={"success": True, "data": [b for b in read_banners() if isinstance(b, dict) and b.get("enabled") is True]}, headers={"Cache-Control": "no-store, max-age=0", "X-Content-Type-Options": "nosniff"})
 
 @app.get("/api/v1/admin/home-banners")
 async def admin_get_home_banners(request: Request):
